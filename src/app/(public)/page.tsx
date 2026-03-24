@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 export default function TopPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -11,12 +9,6 @@ export default function TopPage() {
           </div>
           UDエスカレーター 広告管理
         </div>
-        <Link
-          href="/login"
-          className="px-5 py-2 bg-[var(--color-ud-navy)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-ud-blue)] transition-colors"
-        >
-          ログイン
-        </Link>
       </nav>
 
       {/* ヒーロー */}
@@ -34,12 +26,6 @@ export default function TopPage() {
             統合型広告管理ポータルです。
           </p>
           <div className="flex gap-3 flex-wrap">
-            <Link
-              href="/login"
-              className="px-7 py-3 bg-[var(--color-ud-navy)] text-white rounded-lg text-[15px] font-medium hover:bg-[var(--color-ud-blue)] transition-colors"
-            >
-              ログインして始める
-            </Link>
             <a
               href="#roles"
               className="px-6 py-3 border border-gray-300 rounded-lg text-[15px] text-gray-500 hover:bg-gray-50 transition-colors"
@@ -70,11 +56,11 @@ export default function TopPage() {
         </div>
       </section>
 
-      {/* ロール別ログインカード */}
+      {/* 3つの専用ポータル */}
       <section id="roles" className="px-10 py-16 bg-gray-50 border-b border-gray-100">
-        <h2 className="text-xl font-semibold text-center mb-1.5">ご利用者別ログイン</h2>
+        <h2 className="text-xl font-semibold text-center mb-1.5">３者間のやり取りを簡略化</h2>
         <p className="text-sm text-gray-400 text-center mb-10">
-          役割に応じたポータルにアクセスできます
+          広告代理店が使いやすい設計になっています
         </p>
 
         <div className="grid grid-cols-3 gap-5 max-w-4xl mx-auto">
@@ -89,7 +75,6 @@ export default function TopPage() {
             desc="建物・ESC管理、代理店・価格・入金管理を行うUD社専用ダッシュボード"
             features={["建物・ESC・バナー管理", "代理店・価格設定", "入金確認・レポート"]}
             dotColor="bg-[var(--color-ud-blue)]"
-            btnClass="border-blue-200 text-[var(--color-ud-blue)] hover:bg-[var(--color-ud-blue-light)]"
           />
 
           {/* 代理店 */}
@@ -103,7 +88,6 @@ export default function TopPage() {
             desc="空き枠検索・予約・決済・請求書管理を行う代理店専用ポータル"
             features={["空き枠検索・予約", "Stripe決済・請求書", "広告主リンク発行"]}
             dotColor="bg-[var(--color-agency-purple)]"
-            btnClass="border-purple-200 text-[var(--color-agency-purple)] hover:bg-[var(--color-agency-purple-light)]"
           />
 
           {/* 広告主 */}
@@ -117,7 +101,6 @@ export default function TopPage() {
             desc="掲載申込・掲載状況の確認ができる広告主専用マイページ"
             features={["掲載申込", "掲載状況確認", "契約履歴"]}
             dotColor="bg-[var(--color-advertiser-coral)]"
-            btnClass="border-orange-200 text-[var(--color-advertiser-coral)] hover:bg-[var(--color-advertiser-coral-light)]"
           />
         </div>
       </section>
@@ -168,12 +151,11 @@ type RoleCardProps = {
   desc: string
   features: string[]
   dotColor: string
-  btnClass: string
 }
 
 function RoleCard({
   iconBg, iconText, iconColor, role, roleColor,
-  title, desc, features, dotColor, btnClass,
+  title, desc, features, dotColor,
 }: RoleCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-7 flex flex-col gap-3">
@@ -195,12 +177,6 @@ function RoleCard({
           </li>
         ))}
       </ul>
-      <Link
-        href="/login"
-        className={`mt-auto w-full py-2.5 border rounded-lg text-sm font-medium text-center transition-colors ${btnClass}`}
-      >
-        ログイン
-      </Link>
     </div>
   )
 }
