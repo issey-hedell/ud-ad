@@ -94,3 +94,17 @@ export type BuildingForm = {
   submitted_at: string | null
   created_at: string
 }
+
+// 代理店申請
+export type AgencyApplication = {
+  id: string
+  company_name: string
+  contact_name: string
+  email: string
+  phone: string
+  address: string | null
+  business: string | null
+  agreed_at: string
+  status: "pending" | "approved" | "rejected"
+  created_at: string
+}

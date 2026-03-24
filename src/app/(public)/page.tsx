@@ -128,6 +128,30 @@ export default function TopPage() {
         </div>
       </section>
 
+      {/* 代理店様向けCTA */}
+      <section className="px-10 py-20 bg-[var(--color-ud-navy)]">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs font-semibold tracking-widest uppercase text-blue-300 mb-4">
+            FOR AGENCIES
+          </p>
+          <h2 className="text-2xl font-semibold text-white mb-5 leading-snug">
+            エスカレーター広告への掲載を<br />
+            希望の代理店様へ
+          </h2>
+          <p className="text-[15px] text-blue-100 leading-relaxed mb-8 max-w-lg mx-auto">
+            全国のエスカレーターに広告枠をご用意しています。
+            代理店として登録いただくと、空き枠検索・予約・請求書管理が
+            すべてオンラインで完結します。
+          </p>
+          <a
+            href="/agency-apply"
+            className="inline-block px-8 py-3.5 bg-white text-[var(--color-ud-navy)] rounded-lg text-[15px] font-semibold hover:bg-blue-50 transition-colors"
+          >
+            代理店申請はこちら →
+          </a>
+        </div>
+      </section>
+
       {/* フッター */}
       <footer className="px-10 py-8 flex items-center justify-between border-t border-gray-100">
         <p className="text-xs text-gray-400">© 2024 UDエスカレーター株式会社</p>
