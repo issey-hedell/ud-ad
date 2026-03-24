@@ -1,0 +1,45 @@
+# AWS EC2 Deploy Configuration (SSH経由)
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.aws-ec2.example deploy-config.yml
+
+provider: aws-ec2
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+
+providers:
+  aws-ec2:
+    # 必須設定
+    host: ${EC2_HOST}
+    user: ${EC2_USER}
+    ssh_key: ${EC2_SSH_KEY}
+    app_dir: /var/www/app
+    deploy_script: |
+      cd ${app_dir} &&
+      git fetch origin &&
+      git checkout ${branch} &&
+      git pull origin ${branch} &&
+      npm install &&
+      npm run build &&
+      pm2 restart all
+
+    # オプション設定
+    # port: 22                    # SSHポート（デフォルト: 22）
+    # url: https://your-domain.com  # デプロイ後のURL
+
+# GitHub Secrets に以下を設定:
+# - EC2_HOST: EC2インスタンスのIPアドレスまたはホスト名
+# - EC2_USER: SSHユーザー名（例: ec2-user, ubuntu）
+# - EC2_SSH_KEY: Base64エンコードされたSSH秘密鍵
+#
+# SSH秘密鍵のBase64エンコード方法:
+# cat ~/.ssh/your-key.pem | base64 | tr -d '\n'
+#
+# 注意:
+# - EC2インスタンスのセキュリティグループでSSH (port 22) を許可
+# - 適切なIAMロールまたは権限を設定

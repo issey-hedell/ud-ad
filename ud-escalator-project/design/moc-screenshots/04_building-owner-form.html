@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>MOC - 建物オーナーフォーム | UDエスカレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f9fa;color:#1a1a1a}
+.wrap{max-width:600px;margin:0 auto;padding:32px 16px 48px}
+.fh-logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px}
+.fh-mark{width:28px;height:28px;border-radius:6px;background:#1A3A5C;display:flex;align-items:center;justify-content:center}
+.fh-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:6px}
+.fh-sub{font-size:13px;color:#666;line-height:1.65;text-align:center;margin-bottom:24px}
+.steps-bar{display:flex;align-items:center;margin-bottom:6px}
+.sd{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.sd-done{background:#1A3A5C;color:#fff}.sd-active{background:#1A3A5C;color:#fff;outline:3px solid #B5D4F4;outline-offset:1px}.sd-todo{background:#f0f0f0;color:#bbb}
+.step-line{flex:1;height:1px;background:#ddd}.step-line.done{background:#1A3A5C}
+.step-labels{display:flex;justify-content:space-between;margin-top:5px;margin-bottom:22px}
+.sl{font-size:10px;color:#bbb;text-align:center;flex:1}.sl.active{color:#185FA5;font-weight:600}
+.section{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:20px;margin-bottom:12px}
+.sec-title{font-size:13px;font-weight:600;margin-bottom:14px}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:600;color:#666;margin-bottom:5px;display:flex;gap:4px}
+.req{font-size:10px;color:#A32D2D}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a}
+textarea{resize:vertical;min-height:72px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.hint{font-size:11px;color:#bbb;margin-top:4px}
+.esc-block{background:#f8f8f8;border-radius:8px;border:1px solid #ebebeb;padding:14px;margin-bottom:10px}
+.esc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.esc-label{font-size:12px;font-weight:600}
+.btn-del{padding:3px 8px;border:1px solid #ddd;border-radius:8px;font-size:10px;background:transparent;color:#bbb;cursor:pointer}
+.btn-add{width:100%;padding:9px;border:1px dashed #ddd;border-radius:8px;font-size:12px;background:transparent;color:#888;cursor:pointer;margin-top:4px}
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#666}
+.actions{display:flex;gap:10px;margin-top:20px}
+.btn-back{flex:1;padding:11px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:transparent;color:#666;cursor:pointer}
+.btn-next{flex:2;padding:11px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.progress-note{text-align:center;font-size:11px;color:#bbb;margin-top:12px}
+.moc-label{position:fixed;top:8px;right:8px;background:#1A3A5C;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;font-family:monospace;z-index:999}
+</style></head><body>
+<div class="moc-label">MOC — 建物オーナー入力フォーム</div>
+<div class="wrap">
+  <div class="fh-logo">
+    <div class="fh-mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="4" height="9" rx="1" fill="white" opacity="0.9"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white" opacity="0.6"/></svg></div>
+    <span style="font-size:14px;font-weight:600">UDエスカレーター</span>
+  </div>
+  <div class="fh-title">建物情報入力フォーム</div>
+  <div class="fh-sub">エスカレーター手すり広告の掲載に向けて、建物・設備情報をご入力ください。<br>入力内容はUD担当者が確認後、反映いたします。</div>
+  <div class="steps-bar">
+    <div class="sd sd-done">&#10003;</div><div class="step-line done"></div>
+    <div class="sd sd-active">2</div><div class="step-line"></div>
+    <div class="sd sd-todo">3</div><div class="step-line"></div>
+    <div class="sd sd-todo">4</div>
+  </div>
+  <div class="step-labels"><span class="sl">基本情報</span><span class="sl active">建物詳細</span><span class="sl">ESC情報</span><span class="sl">確認・送信</span></div>
+  <div class="section">
+    <div class="sec-title">建物情報</div>
+    <div class="field"><div class="fl">建物名 <span class="req">必須</span></div><input type="text" value="渋谷モールA棟"/></div>
+    <div class="row2">
+      <div class="field"><div class="fl">都道府県 <span class="req">必須</span></div><select><option>東京都</option></select></div>
+      <div class="field"><div class="fl">市区町村 <span class="req">必須</span></div><input type="text" value="渋谷区"/></div>
+    </div>
+    <div class="field"><div class="fl">住所（番地以降）<span class="req">必須</span></div><input type="text" value="渋谷2丁目10-1"/></div>
+    <div class="field"><div class="fl">最寄り駅</div><div class="row2"><input type="text" value="渋谷駅"/><input type="text" value="直結"/></div></div>
+  </div>
+  <div class="section">
+    <div class="sec-title">施設情報</div>
+    <div class="row2">
+      <div class="field"><div class="fl">施設種別 <span class="req">必須</span></div>
+        <select><option>商業施設・ショッピングモール</option><option>駅・ターミナル</option><option>オフィスビル</option><option>ホテル</option><option>病院・医療施設</option></select>
+      </div>
+      <div class="field"><div class="fl">建物階数</div><div class="row2"><input type="number" value="12"/><input type="number" value="2"/></div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><div class="fl">1日平均来館者数（概算）<span class="req">必須</span></div>
+        <select><option>〜1万人</option><option>1〜3万人</option><option selected>3〜5万人</option><option>5〜10万人</option><option>10万人以上</option></select>
+        <div class="hint">公表数値・管理会社データ等で概算可</div>
+      </div>
+      <div class="field"><div class="fl">主な利用者層</div>
+        <select><option selected>20〜40代ビジネス層</option><option>ファミリー中心</option><option>シニア層</option><option>学生・若年層</option></select>
+      </div>
+    </div>
+    <div class="field"><div class="fl">施設の主なテナント業種（複数可）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+        <label class="checkbox-row"><input type="checkbox" checked/> ファッション</label>
+        <label class="checkbox-row"><input type="checkbox" checked/> 飲食</label>
+        <label class="checkbox-row"><input type="checkbox"/> 金融・銀行</label>
+        <label class="checkbox-row"><input type="checkbox" checked/> コスメ・美容</label>
+        <label class="checkbox-row"><input type="checkbox"/> エンタメ</label>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-title">エスカレーター情報</div>
+    <div class="esc-block">
+      <div class="esc-header"><span class="esc-label">ESC #1</span><button class="btn-del">削除</button></div>
+      <div class="row3">
+        <div class="field"><div class="fl">方向 <span class="req">必須</span></div><select><option>上り</option><option>下り</option></select></div>
+        <div class="field"><div class="fl">号機番号</div><input type="text" value="A-01"/></div>
+        <div class="field"><div class="fl">フロア区間 <span class="req">必須</span></div><input type="text" value="1F → 2F"/></div>
+      </div>
+      <div class="row2">
+        <div class="field"><div class="fl">手すり種別</div><select><option selected>標準型（黒/グレー）</option><option>透明・クリア</option><option>カラー手すり</option></select></div>
+        <div class="field"><div class="fl">手すり有効長（概算）</div><input type="text" value="約6m"/></div>
+      </div>
+    </div>
+    <div class="esc-block">
+      <div class="esc-header"><span class="esc-label">ESC #2</span><button class="btn-del">削除</button></div>
+      <div class="row3">
+        <div class="field"><div class="fl">方向 <span class="req">必須</span></div><select><option>上り</option><option selected>下り</option></select></div>
+        <div class="field"><div class="fl">号機番号</div><input type="text" value="A-02"/></div>
+        <div class="field"><div class="fl">フロア区間 <span class="req">必須</span></div><input type="text" value="2F → 1F"/></div>
+      </div>
+      <div class="row2">
+        <div class="field"><div class="fl">手すり種別</div><select><option selected>標準型（黒/グレー）</option></select></div>
+        <div class="field"><div class="fl">手すり有効長（概算）</div><input type="text" value="約6m"/></div>
+      </div>
+    </div>
+    <button class="btn-add">＋ エスカレーターを追加する</button>
+  </div>
+  <div class="section">
+    <div class="sec-title">備考・特記事項</div>
+    <textarea placeholder="広告掲載にあたって特別な制約・注意点があればご記載ください"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn-back">← 戻る</button>
+    <button class="btn-next">次へ：ESC情報確認 →</button>
+  </div>
+  <div class="progress-note">下書き保存は自動で行われています · 最終更新：数秒前</div>
+</div>
+</body></html>

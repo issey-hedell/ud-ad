@@ -1,0 +1,39 @@
+# AWS ECS (Fargate/EC2) Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.aws-ecs.example deploy-config.yml
+
+provider: aws-ecs
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+
+providers:
+  aws-ecs:
+    # 必須設定
+    cluster: ${ECS_CLUSTER}
+    service: ${ECS_SERVICE}
+    ecr_repo: ${ECR_REPO}
+    region: ap-northeast-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+    # オプション設定
+    # url: https://your-domain.com  # ALB/NLBのURL
+
+# GitHub Secrets に以下を設定:
+# - ECS_CLUSTER: ECSクラスター名
+# - ECS_SERVICE: ECSサービス名
+# - ECR_REPO: ECRリポジトリURI（例: 123456789.dkr.ecr.region.amazonaws.com/repo）
+# - AWS_ACCESS_KEY_ID: AWS アクセスキー ID
+# - AWS_SECRET_ACCESS_KEY: AWS シークレットアクセスキー
+#
+# 前提条件:
+# - Dockerfile がリポジトリルートに存在
+# - ECSクラスター、サービス、タスク定義が事前に作成済み
+# - ECRリポジトリが作成済み
+# - 適切なIAM権限（ecr:*, ecs:*）が設定済み

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>MOC - 広告主申込フォーム | UDエスカレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f9fa;color:#1a1a1a}
+.wrap{max-width:620px;margin:0 auto;padding:28px 16px 48px}
+.fh-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.fh-mark{width:26px;height:26px;border-radius:6px;background:#1A3A5C;display:flex;align-items:center;justify-content:center}
+.fh-title{font-size:20px;font-weight:600;margin-bottom:5px}
+.fh-sub{font-size:13px;color:#666;line-height:1.65;margin-bottom:18px}
+.construction-warning{background:#FAEEDA;border:1px solid #EF9F27;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.cw-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cw-icon{width:20px;height:20px;border-radius:50%;background:#EF9F27;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cw-title{font-size:13px;font-weight:600;color:#633806}
+.cw-body{font-size:12px;color:#854F0B;line-height:1.7}
+.cw-body strong{color:#633806}
+.cw-check{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:#854F0B;margin-top:6px}
+.slot-confirm{background:#fff;border-radius:12px;border:1px solid #B5D4F4;padding:14px 16px;margin-bottom:16px;display:flex;gap:14px}
+.sc-icon{width:36px;height:36px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.sc-tag{font-size:11px;padding:2px 7px;background:#f0f0f0;border-radius:6px;color:#666;display:inline-block;margin:2px 4px 2px 0}
+.sc-price{font-size:14px;font-weight:600;color:#185FA5;margin-top:6px}
+.section{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:18px 20px;margin-bottom:12px}
+.sec-title{font-size:13px;font-weight:600;margin-bottom:14px}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:600;color:#666;margin-bottom:5px;display:flex;gap:4px}
+.req{font-size:10px;color:#A32D2D}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a}
+textarea{resize:vertical;min-height:64px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:11px;color:#bbb;margin-top:4px}
+.banner-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.banner-opt{border:1px solid #ddd;border-radius:8px;padding:12px 14px;cursor:pointer}
+.banner-opt.selected{border-color:#185FA5;background:#E6F1FB}
+.bo-name{font-size:13px;font-weight:600;margin-bottom:2px}.banner-opt.selected .bo-name{color:#185FA5}
+.bo-size{font-size:11px;color:#666}.bo-note{font-size:10px;color:#bbb;margin-top:3px}
+.banner-warning{background:#FCEBEB;border:1px solid #F09595;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.bw-title{font-size:12px;font-weight:600;color:#791F1F;margin-bottom:4px}
+.bw-body{font-size:11px;color:#A32D2D;line-height:1.65}
+.upload-area{border:1px dashed #ddd;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#fafafa}
+.quote-box{background:#E6F1FB;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.qr{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.qr.total{font-weight:600;font-size:14px;border-top:1px solid #B5D4F4;padding-top:8px;margin-top:4px;color:#0C447C}
+.pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pay-opt{padding:10px 12px;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-size:12px;color:#666;background:#fff}
+.pay-opt.sel{border-color:#1A3A5C;color:#185FA5;font-weight:600}
+.construction-agree{background:#fff;border-radius:12px;border:1px solid #EF9F27;padding:14px 16px;margin-bottom:12px}
+.ca-title{font-size:12px;font-weight:600;color:#633806;margin-bottom:10px}
+.agree-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#666;margin-bottom:8px;line-height:1.55}
+.agree-item input{width:14px;height:14px;flex-shrink:0;margin-top:2px;accent-color:#1A3A5C}
+.agree-item strong{color:#633806}
+.btn-submit{width:100%;padding:12px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
+.agency-note{text-align:center;font-size:11px;color:#bbb;margin-top:10px}
+.moc-label{position:fixed;top:8px;right:8px;background:#1A3A5C;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;font-family:monospace;z-index:999}
+</style></head><body>
+<div class="moc-label">MOC — 広告主申込フォーム</div>
+<div class="wrap">
+  <div class="fh-top">
+    <div class="fh-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="4" height="9" rx="1" fill="white" opacity="0.9"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white" opacity="0.6"/></svg></div>
+    <span style="font-size:13px;color:#666">UDエスカレーター &#8212; 広告お申込みフォーム</span>
+  </div>
+  <div class="fh-title">広告掲載のお申込み</div>
+  <div class="fh-sub">担当代理店より発行されたURLからアクセスしています。以下の情報をご入力の上、お申込みください。</div>
+  <div class="construction-warning">
+    <div class="cw-head">
+      <div class="cw-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2L1 10h10L6 2z" stroke="white" stroke-width="1.2" stroke-linejoin="round" fill="none"/><path d="M6 5.5V7.5M6 8.5v.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+      <div class="cw-title">施工に関する重要なご案内</div>
+    </div>
+    <div class="cw-body">
+      手すり広告は<strong>現地での施工作業をともなう</strong>ため、<strong>納品後のデザイン変更は原則お受けできません。</strong><br>変更をご希望の場合は別途施工費が発生します。お申込み前に必ず以下をご確認ください。
+      <div class="cw-check">&#10003; バナーのビジュアル・コピー・ロゴ等に誤りがないか最終確認してください</div>
+      <div class="cw-check">&#10003; 入稿データは完成版（校了済み）のものをご送付ください</div>
+      <div class="cw-check">&#10003; 掲載期間・掲載場所をご確認のうえ、お申込みください</div>
+    </div>
+  </div>
+  <div class="slot-confirm">
+    <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="5" height="12" rx="1.2" fill="#185FA5" opacity="0.8"/><rect x="11" y="2" width="5" height="15" rx="1.2" fill="#185FA5" opacity="0.5"/></svg></div>
+    <div style="flex:1">
+      <div class="sc-title">渋谷スクランブルスクエア &#8212; 上り A-01（3F&#8594;4F）</div>
+      <span class="sc-tag">渋谷駅直結</span><span class="sc-tag">1日 約82,000人</span><span class="sc-tag">2026年5月1日&#12316;</span><span class="sc-tag">担当：山田電通</span>
+      <div class="sc-price">&#165;180,000 / 月（税別）</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-title">企業情報</div>
+    <div class="field"><div class="fl">会社名 <span class="req">必須</span></div><input type="text" placeholder="株式会社&#12288;&#12288;"/></div>
+    <div class="row2">
+      <div class="field"><div class="fl">担当者氏名 <span class="req">必須</span></div><input type="text" placeholder="山田 太郎"/></div>
+      <div class="field"><div class="fl">部署・役職</div><input type="text" placeholder="マーケティング部"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><div class="fl">メールアドレス <span class="req">必須</span></div><input type="email" placeholder="yamada@example.com"/></div>
+      <div class="field"><div class="fl">電話番号</div><input type="tel" placeholder="03-XXXX-XXXX"/></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-title">広告内容</div>
+    <div class="field"><div class="fl">商品・サービス名 <span class="req">必須</span></div><input type="text" placeholder="例：&#12288;&#12288;ブランドの秋冬コレクション"/></div>
+    <div class="field">
+      <div class="fl">訴求メッセージ・コピー</div>
+      <textarea placeholder="バナーに記載したいキャッチコピーや訴求内容をご記入ください"></textarea>
+      <div class="hint">施工後の変更は別途費用が発生します。内容を確定してからご入力ください。</div>
+    </div>
+    <div class="row2">
+      <div class="field"><div class="fl">掲載期間 <span class="req">必須</span></div>
+        <select><option>1ヶ月（2026年5月1日&#12316;5月31日）</option><option>3ヶ月</option><option>6ヶ月</option><option>12ヶ月</option></select>
+      </div>
+      <div class="field"><div class="fl">バナーサイズ <span class="req">必須</span></div>
+        <select><option>Aサイズ（120×30cm）</option><option>Bサイズ（80×20cm）</option><option>Cサイズ（60×15cm）</option></select>
+      </div>
+    </div>
+    <div class="hint" style="padding:8px 10px;background:#fafafa;border-radius:8px;margin-top:4px">
+      &#9888; サイズ選択後の変更は施工のやり直しとなり、別途費用（目安：基本施工費の50&#12316;100%）が発生します。
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-title">バナーデータ入稿</div>
+    <div class="banner-warning">
+      <div class="bw-title">&#9888; 入稿データは校了済みの最終版をご送付ください</div>
+      <div class="bw-body">施工開始後のデータ差し替えは<strong>追加施工費が発生</strong>します。必ず社内での最終承認を経てからアップロードしてください。<br><strong>対応形式：</strong>PDF / AI / PSD（300dpi以上）· 最大50MB</div>
+    </div>
+    <div class="upload-area">
+      <div style="font-size:12px;color:#888">校了済みファイルをドラッグ＆ドロップ、またはクリックしてアップロード</div>
+      <div style="font-size:11px;color:#bbb;margin-top:4px">施工後の変更は追加費用が発生します</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#666;margin-top:8px;cursor:pointer"><input type="checkbox" style="width:14px;height:14px"/> データは後で担当代理店に送付する</label>
+  </div>
+  <div class="quote-box">
+    <div class="qr"><span style="color:#666">基本掲載料（1ヶ月 / Aサイズ）</span><span>&#165;180,000</span></div>
+    <div class="qr"><span style="color:#666">消費税（10%）</span><span>&#165;18,000</span></div>
+    <div class="qr total"><span>合計</span><span>&#165;198,000</span></div>
+    <div style="font-size:11px;color:#185FA5;margin-top:10px;margin-bottom:8px;font-weight:600">お支払い方法</div>
+    <div class="pay-opts">
+      <div class="pay-opt sel"><div style="font-weight:600;margin-bottom:2px">クレジットカード</div><div style="font-size:10px;opacity:0.8">Stripe決済 / 即時確定</div></div>
+      <div class="pay-opt"><div style="font-weight:600;margin-bottom:2px">振込 / 請求書払い</div><div style="font-size:10px;opacity:0.8">PDF発行 / 30日以内振込</div></div>
+    </div>
+  </div>
+  <div class="construction-agree">
+    <div class="ca-title">&#9888; お申込み前に以下をご確認・同意の上、チェックしてください</div>
+    <label class="agree-item"><input type="checkbox"/><span>手すり広告は<strong>現地施工をともなう</strong>ため、<strong>納品・施工完了後のデザイン変更は原則対応不可</strong>であることを理解しました</span></label>
+    <label class="agree-item"><input type="checkbox"/><span>変更が必要な場合は<strong>別途施工費（目安：基本施工費の50&#12316;100%）が発生する</strong>ことに同意します</span></label>
+    <label class="agree-item"><input type="checkbox"/><span>入稿するバナーデータは社内で最終確認・校了済みであることを確認しました</span></label>
+  </div>
+  <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#666;margin-bottom:14px;cursor:pointer"><input type="checkbox" checked style="width:14px;height:14px;flex-shrink:0;margin-top:2px"/><span><a style="color:#185FA5">利用規約</a> および <a style="color:#185FA5">プライバシーポリシー</a> に同意する</span></label>
+  <button class="btn-submit">申込を確定する</button>
+  <div class="agency-note">担当代理店：山田電通 &#124; ご不明な点は担当者までお問い合わせください</div>
+</div>
+</body></html>

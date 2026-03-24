@@ -1,0 +1,311 @@
+name: Guardian AI - Code Quality Check
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feat/**'
+      - 'feature/**'
+      - 'fix/**'
+      - 'test/**'
+
+jobs:
+  guardian-ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # template リポジトリ自体では初回セットアップも実行
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      # 0. 初回セットアップ（ブランチ保護設定）
+      - name: Setup Branch Protection (First Run)
+        if: github.repository != 'issey-hedell/template'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          # ブランチ保護が未設定なら設定
+          PROTECTION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/branches/main/protection" \
+            | jq -r '.url // empty')
+
+          if [ -z "$PROTECTION" ]; then
+            echo "→ ブランチ保護を設定中..."
+
+            curl -s -X PUT \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/json" \
+              "https://api.github.com/repos/${{ github.repository }}/branches/main/protection" \
+              -d '{
+                "required_status_checks": {
+                  "strict": true,
+                  "contexts": ["guardian-ai"]
+                },
+                "enforce_admins": false,
+                "required_pull_request_reviews": null,
+                "restrictions": null,
+                "required_linear_history": false,
+                "allow_force_pushes": false,
+                "allow_deletions": false
+              }'
+
+            echo "✅ ブランチ保護設定完了"
+          else
+            echo "✅ ブランチ保護は既に設定済み"
+          fi
+
+      # 1. チェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Node.js セットアップ
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 本体プロジェクトの依存関係インストール
+      - name: Install project dependencies
+        run: |
+          if [ -f "package.json" ] && [ -f "package-lock.json" ]; then
+            npm ci
+          elif [ -f "package.json" ]; then
+            npm install
+          else
+            echo "No package.json found, skipping project dependencies"
+          fi
+
+      # 4. ガーディアンAIの依存関係インストール
+      - name: Install Guardian AI dependencies
+        working-directory: .github/guardian-ai
+        run: npm ci
+
+      # 5. 差分ファイル取得
+      - name: Get changed files
+        id: changed-files
+        run: |
+          echo "Fetching changed files..."
+          # push の場合は直前のコミットとの差分
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # 初回push（新規ブランチ）の場合
+            git diff --name-only HEAD~1 > changed_files.txt 2>/dev/null || echo "" > changed_files.txt
+          else
+            git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
+          fi
+          cat changed_files.txt
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          cat changed_files.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # 6. 静的チェック（並列実行）
+      - name: Run Prettier
+        id: prettier
+        run: |
+          if [ -f "package.json" ]; then
+            npx prettier --check . || echo "prettier_failed=true" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Run ESLint
+        id: eslint
+        run: |
+          if [ -f "package.json" ]; then
+            npx eslint . --ext .js,.jsx,.ts,.tsx || echo "eslint_failed=true" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Run TypeScript check
+        id: typescript
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit || echo "typescript_failed=true" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      # 7. ガーディアンAIチェック実行
+      - name: Run Guardian AI Check
+        id: guardian-check
+        working-directory: .github/guardian-ai
+        env:
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.changed_files }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: node src/index.js
+
+      # 8. リスク判定結果を読み込み
+      - name: Read Risk Level
+        id: risk-evaluator
+        run: |
+          if [ -f ".github/guardian-ai/output/risk_level.txt" ]; then
+            RISK=$(cat .github/guardian-ai/output/risk_level.txt)
+            echo "risk=$RISK" >> $GITHUB_OUTPUT
+            echo "Risk Level: $RISK"
+          else
+            echo "risk=low" >> $GITHUB_OUTPUT
+            echo "Risk level file not found, defaulting to low"
+          fi
+
+      # 9. 修正内容を確認
+      - name: Check for fixes
+        id: check-fixes
+        run: |
+          if [ -f ".github/guardian-ai/output/fixes.json" ]; then
+            FIXES_COUNT=$(jq length .github/guardian-ai/output/fixes.json)
+            echo "fixes_count=$FIXES_COUNT" >> $GITHUB_OUTPUT
+            if [ "$FIXES_COUNT" -gt 0 ]; then
+              echo "has_fixes=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_fixes=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_fixes=false" >> $GITHUB_OUTPUT
+            echo "fixes_count=0" >> $GITHUB_OUTPUT
+          fi
+
+      # 10. 自動修正実行（低リスクのみ）
+      - name: Apply Auto Fixes
+        if: steps.risk-evaluator.outputs.risk == 'low' && steps.check-fixes.outputs.has_fixes == 'true'
+        working-directory: .github/guardian-ai
+        run: node src/fixer.js
+
+      # 11. 修正後のファイルをコミット
+      - name: Commit fixes
+        if: steps.risk-evaluator.outputs.risk == 'low' && steps.check-fixes.outputs.has_fixes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "🤖 Guardian AI: Auto fixes applied" || echo "No changes to commit"
+          git push
+
+      # 12. Slack通知（中・高リスク）
+      - name: Notify Slack (Medium/High Risk)
+        if: steps.risk-evaluator.outputs.risk == 'medium' || steps.risk-evaluator.outputs.risk == 'high'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          AUTHOR: ${{ github.event.head_commit.author.name }}
+          RISK_LEVEL: ${{ steps.risk-evaluator.outputs.risk }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping"
+            exit 0
+          fi
+
+          if [ "$RISK_LEVEL" = "high" ]; then
+            EMOJI="🔴"
+          else
+            EMOJI="🟡"
+          fi
+
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"$EMOJI Guardian AI: $RISK_LEVEL risk detected\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {
+                    \"type\": \"plain_text\",
+                    \"text\": \"$EMOJI Guardian AI Alert\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*Risk Level:* $RISK_LEVEL\\n*Branch:* $BRANCH\\n*Author:* $AUTHOR\\n*Commit:* $COMMIT_MESSAGE\"
+                  }
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": {
+                        \"type\": \"plain_text\",
+                        \"text\": \"View Commit\"
+                      },
+                      \"url\": \"$COMMIT_URL\"
+                    }
+                  ]
+                }
+              ]
+            }"
+
+      # 13. 次フェーズへ（テスト自動化）- 成功時のみ
+      - name: Trigger Test Workflow
+        if: success()
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          event-type: guardian-ai-completed
+          client-payload: |
+            {
+              "branch": "${{ github.ref_name }}",
+              "commit_sha": "${{ github.sha }}",
+              "risk_level": "${{ steps.risk-evaluator.outputs.risk }}"
+            }
+
+      # 14. ジョブサマリーを出力
+      - name: Output Job Summary
+        if: always()
+        run: |
+          echo "## 🤖 Guardian AI Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # リスクレベルに応じた絵文字
+          RISK="${{ steps.risk-evaluator.outputs.risk }}"
+          if [ "$RISK" = "high" ]; then
+            RISK_EMOJI="🔴"
+          elif [ "$RISK" = "medium" ]; then
+            RISK_EMOJI="🟡"
+          else
+            RISK_EMOJI="🟢"
+          fi
+
+          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Risk Level | $RISK_EMOJI **$RISK** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Issues Found | ${{ steps.check-fixes.outputs.fixes_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Issues の詳細
+          if [ -f ".github/guardian-ai/output/issues.json" ]; then
+            ISSUES_COUNT=$(cat .github/guardian-ai/output/issues.json | jq length)
+            if [ "$ISSUES_COUNT" -gt 0 ]; then
+              echo "### 📋 Issues Found ($ISSUES_COUNT)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              cat .github/guardian-ai/output/issues.json | jq -r '.[] | "#### \(.severity | ascii_upcase): \(.file):\(.line)\n\n**Problem:** \(.message)\n\n**Type:** `\(.type)`\n\n---\n"' >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### ✅ No Issues Found" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "All checks passed! Your code looks great. 🎉" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # 次のステップ
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "- ✅ Guardian AI check passed" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Proceeding to Test Automation" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Guardian AI check failed" >> $GITHUB_STEP_SUMMARY
+            echo "- ⚠️ Fix the issues above before proceeding" >> $GITHUB_STEP_SUMMARY
+            echo "- 🚫 Deployment will be blocked" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,17 @@
+{
+  "name": "vanilla",
+  "displayName": "Vanilla JavaScript",
+  "category": "frontend",
+  "description": "Plain JavaScript without frameworks",
+  "files": {
+    "include": [
+      "stacks/frontend/vanilla/structure/**/*",
+      "stacks/frontend/vanilla/checklists/**/*"
+    ],
+    "exclude": [
+      "docs/checklists/03_react.md"
+    ]
+  },
+  "dependencies": {},
+  "claudeRules": "stacks/frontend/vanilla/claude-rules.md"
+}

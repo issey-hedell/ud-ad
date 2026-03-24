@@ -1,0 +1,47 @@
+# docs/AUTO_UPDATE_FILES.yaml
+# 自動更新対象ファイルの設定（Claude とユーザーが共同管理）
+
+version: 1
+
+files: []
+# 例:
+# - path: docs/generated/DIRECTORY_STRUCTURE.md
+#   type: directory_tree
+#   source: src/
+#   exclude:
+#     - node_modules/
+#     - .git/
+#   added_by: user
+#   added_at: 2026-01-15
+#   last_updated: 2026-01-15
+#
+# - path: docs/generated/API_LIST.md
+#   type: api_list
+#   source: backend/app/routes/
+#   exclude: []
+#   added_by: claude
+#   added_at: 2026-01-15
+#   last_updated: 2026-01-15
+#
+# - path: docs/generated/COMPONENT_LIST.md
+#   type: component_list
+#   source: frontend/src/components/
+#   exclude:
+#     - __tests__/
+#   added_by: user
+#   added_at: 2026-01-15
+#   last_updated: 2026-01-15
+
+# 対応する type 一覧:
+# - directory_tree: ディレクトリ構成図（source: 対象ディレクトリ）
+# - sitemap: 画面一覧・遷移図（source: pages/ や routes/）
+# - api_list: API エンドポイント一覧（source: routes/ や controllers/）
+# - component_list: コンポーネント一覧（source: components/）
+# - type_definitions: 型定義一覧（source: types/ や *.d.ts）
+# - custom: カスタム（Claude が判断）
+
+settings:
+  # セッション開始時に自動更新をチェックするか
+  check_on_session_start: true
+  # 実装完了時に関連ドキュメントの更新を提案するか
+  suggest_on_implementation: true

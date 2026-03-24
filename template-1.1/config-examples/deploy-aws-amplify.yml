@@ -1,0 +1,33 @@
+# AWS Amplify Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.aws-amplify.example deploy-config.yml
+
+provider: aws-amplify
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+  preview:
+    auto_deploy: true
+
+providers:
+  aws-amplify:
+    # 必須設定
+    app_id: ${AMPLIFY_APP_ID}
+    region: ap-northeast-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+# GitHub Secrets に以下を設定:
+# - AMPLIFY_APP_ID: Amplify App ID
+# - AWS_ACCESS_KEY_ID: AWS アクセスキー ID
+# - AWS_SECRET_ACCESS_KEY: AWS シークレットアクセスキー
+#
+# 取得方法:
+# 1. AWS Console → Amplify → アプリ選択 → App settings → General
+# 2. App ARN から App ID を取得（最後のスラッシュ以降）
+# 3. IAM でアクセスキーを作成

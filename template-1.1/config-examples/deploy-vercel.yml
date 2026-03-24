@@ -1,0 +1,32 @@
+# Vercel Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.vercel.example deploy-config.yml
+
+provider: vercel
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+  preview:
+    auto_deploy: true
+
+providers:
+  vercel:
+    # 必須設定
+    token: ${VERCEL_TOKEN}
+    org_id: ${VERCEL_ORG_ID}
+    project_id: ${VERCEL_PROJECT_ID}
+
+# GitHub Secrets に以下を設定:
+# - VERCEL_TOKEN: Vercel API トークン
+# - VERCEL_ORG_ID: Vercel Organization ID
+# - VERCEL_PROJECT_ID: Vercel Project ID
+#
+# 取得方法:
+# 1. https://vercel.com にログイン
+# 2. Settings → Tokens → Create Token
+# 3. Settings → General → Organization ID / Project ID

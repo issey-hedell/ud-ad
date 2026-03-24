@@ -1,0 +1,39 @@
+# Cloudflare Pages Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.cloudflare.example deploy-config.yml
+
+provider: cloudflare
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+  preview:
+    auto_deploy: true
+
+providers:
+  cloudflare:
+    # 必須設定
+    account_id: ${CLOUDFLARE_ACCOUNT_ID}
+    project_name: your-project-name
+    token: ${CLOUDFLARE_API_TOKEN}
+
+    # オプション設定
+    # build_command: npm run build  # ビルドコマンド
+    # output_directory: out         # ビルド出力ディレクトリ（デフォルト: out）
+
+# GitHub Secrets に以下を設定:
+# - CLOUDFLARE_ACCOUNT_ID: Cloudflare Account ID
+# - CLOUDFLARE_API_TOKEN: Cloudflare API Token
+#
+# 取得方法:
+# 1. https://dash.cloudflare.com にログイン
+# 2. 右上のアカウントメニュー → Account ID をコピー
+# 3. My Profile → API Tokens → Create Token
+#    → Cloudflare Pages の Edit 権限を付与
+#
+# 前提条件:
+# - Cloudflare Pages プロジェクトを事前に作成

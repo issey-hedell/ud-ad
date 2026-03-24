@@ -1,0 +1,18 @@
+{
+  "name": "sqlalchemy",
+  "displayName": "SQLAlchemy",
+  "category": "orm",
+  "description": "Python SQL toolkit and ORM",
+  "files": {
+    "include": [
+      "stacks/orm/sqlalchemy/checklists/**/*"
+    ],
+    "exclude": [
+      "docs/checklists/01_prisma.md"
+    ]
+  },
+  "dependencies": {
+    "backend": ["python-fastapi"]
+  },
+  "claudeRules": "stacks/orm/sqlalchemy/claude-rules.md"
+}

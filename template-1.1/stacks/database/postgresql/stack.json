@@ -1,0 +1,14 @@
+{
+  "name": "postgresql",
+  "displayName": "PostgreSQL",
+  "category": "database",
+  "description": "PostgreSQL relational database",
+  "files": {
+    "include": [
+      "stacks/database/postgresql/checklists/**/*"
+    ],
+    "exclude": []
+  },
+  "dependencies": {},
+  "claudeRules": null
+}

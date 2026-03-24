@@ -1,0 +1,26 @@
+{
+  "name": "test-automation",
+  "version": "1.0.0",
+  "description": "Automated testing for template projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:component && npm run test:e2e",
+    "test:unit": "vitest run tests/unit",
+    "test:component": "vitest run tests/component",
+    "test:e2e": "playwright test",
+    "test:ui": "vitest --ui",
+    "report:generate": "node scripts/generate-report.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vitest": "^1.0.4",
+    "jsdom": "^23.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

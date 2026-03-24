@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MOC - UDダッシュボード | UDエスカレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;border-bottom:1px solid #e8e8e8;background:#fff}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.lm{width:28px;height:28px;border-radius:6px;background:#1A3A5C;display:flex;align-items:center;justify-content:center}
+.lm svg{width:16px;height:16px}
+.nl{padding:6px 14px;font-size:13px;color:#666;border-radius:8px;cursor:pointer;border:none;background:transparent}
+.nl.active{color:#1A3A5C;font-weight:600;border-bottom:2px solid #1A3A5C;border-radius:0}
+.main{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:200px;padding:16px 12px;border-right:1px solid #f0f0f0;flex-shrink:0}
+.sb-label{font-size:10px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;padding:0 8px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;color:#666;cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.sb-item.active{background:#E6F1FB;color:#185FA5;font-weight:600}
+.sb-badge{background:#FCEBEB;color:#A32D2D;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:auto}
+.content{flex:1;padding:24px 28px;background:#f8f9fa}
+.pt{font-size:18px;font-weight:600;margin-bottom:2px}
+.ps{font-size:12px;color:#888;margin-bottom:20px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.mc{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:14px 16px}
+.ml{font-size:11px;color:#888;margin-bottom:5px}
+.mv{font-size:20px;font-weight:600}
+.msub{font-size:10px;color:#bbb;margin-top:3px}
+.mv.b{color:#185FA5}.mv.g{color:#3B6D11}.mv.a{color:#854F0B}.mv.r{color:#A32D2D}
+.row2{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
+.card{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:16px 18px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ct{font-size:13px;font-weight:600}
+.btn-sm{padding:5px 12px;border:1px solid #ddd;border-radius:8px;font-size:11px;background:transparent;color:#666;cursor:pointer}
+.btn-primary-sm{padding:5px 12px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:11px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;font-size:10px;font-weight:600;color:#bbb;padding:0 8px 8px;text-transform:uppercase}
+.tbl td{padding:8px;border-top:1px solid #f5f5f5;vertical-align:middle}
+.tbl tr:hover td{background:#fafafa}
+.status{display:inline-flex;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:600}
+.s-ok{background:#EAF3DE;color:#3B6D11}.s-few{background:#FAEEDA;color:#854F0B}
+.s-pending{background:#FAEEDA;color:#854F0B}.s-paid{background:#EAF3DE;color:#3B6D11}
+.s-overdue{background:#FCEBEB;color:#A32D2D}
+.occ-bar{height:6px;border-radius:3px;background:#eee;overflow:hidden;min-width:60px}
+.occ-fill{height:100%;border-radius:3px;background:#1A3A5C}
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid #f5f5f5}
+.alert-row:first-child{border-top:none;padding-top:0}
+.alert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dot-r{background:#E24B4A}.dot-a{background:#EF9F27}
+.alert-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.alert-sub{font-size:11px;color:#888}
+.alert-time{font-size:10px;color:#bbb;margin-left:auto;margin-top:2px;white-space:nowrap}
+.chart-area{height:90px;display:flex;align-items:flex-end;gap:5px;padding-top:8px}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.bar{border-radius:3px 3px 0 0;background:#1A3A5C;width:100%}
+.bar.prev{background:#e8e8e8}
+.bar-label{font-size:9px;color:#bbb}
+.moc-label{position:fixed;top:8px;right:8px;background:#1A3A5C;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;font-family:monospace;z-index:999}
+</style>
+</head>
+<body>
+<div class="moc-label">MOC — UDポータル（ダッシュボード）</div>
+<div class="topnav">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="logo"><div class="lm"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="4" height="9" rx="1" fill="white" opacity="0.9"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white" opacity="0.6"/><rect x="6" y="7" width="2" height="6" rx="0.8" fill="white" opacity="0.4"/></svg></div>UDエスカレーター</div>
+    <div style="display:flex;gap:4px">
+      <button class="nl active">ダッシュボード</button><button class="nl">建物管理</button><button class="nl">価格設定</button><button class="nl">入金管理</button><button class="nl">レポート</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#0C447C">UD</div><span style="font-size:12px;color:#888">管理者</span></div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div style="margin-bottom:20px">
+      <div class="sb-label">管理</div>
+      <button class="sb-item active">ダッシュボード</button>
+      <button class="sb-item">建物一覧</button>
+      <button class="sb-item">ESC管理</button>
+      <button class="sb-item">価格設定</button>
+    </div>
+    <div>
+      <div class="sb-label">運営</div>
+      <button class="sb-item">入金管理 <span class="sb-badge">2</span></button>
+      <button class="sb-item">代理店管理</button>
+      <button class="sb-item">フォームURL発行</button>
+      <button class="sb-item">レポート</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="pt">ダッシュボード</div>
+    <div class="ps">全国の掲載状況・売上・アラートを確認できます</div>
+    <div class="metrics">
+      <div class="mc"><div class="ml">契約建物数</div><div class="mv b">32</div><div class="msub">うち稼働中 28棟</div></div>
+      <div class="mc"><div class="ml">総ESC数</div><div class="mv b">186</div><div class="msub">空き 148 / 掲載中 38</div></div>
+      <div class="mc"><div class="ml">今月売上（確定）</div><div class="mv g">¥2,340,000</div><div class="msub">前月比 +8%</div></div>
+      <div class="mc"><div class="ml">未入金（振込待ち）</div><div class="mv a">¥480,000</div><div class="msub">3件・要確認</div></div>
+    </div>
+    <div class="row2">
+      <div class="card">
+        <div class="ch"><div class="ct">建物別 稼働率</div><button class="btn-sm">すべて表示</button></div>
+        <table class="tbl">
+          <thead><tr><th>建物名</th><th>エリア</th><th>ESC数</th><th>稼働率</th><th>ステータス</th></tr></thead>
+          <tbody>
+            <tr><td>渋谷スクランブルスクエア</td><td>渋谷</td><td>12</td><td><div class="occ-bar"><div class="occ-fill" style="width:83%"></div></div></td><td><span class="status s-ok">稼働中</span></td></tr>
+            <tr><td>新宿高島屋 T.S.</td><td>新宿</td><td>8</td><td><div class="occ-bar"><div class="occ-fill" style="width:62%"></div></div></td><td><span class="status s-few">空き少</span></td></tr>
+            <tr><td>池袋サンシャインシティ</td><td>池袋</td><td>14</td><td><div class="occ-bar"><div class="occ-fill" style="width:71%"></div></div></td><td><span class="status s-ok">稼働中</span></td></tr>
+            <tr><td>品川インターシティ</td><td>品川</td><td>6</td><td><div class="occ-bar"><div class="occ-fill" style="width:33%"></div></div></td><td><span class="status s-few">空き多</span></td></tr>
+            <tr><td>大阪グランフロント</td><td>大阪</td><td>16</td><td><div class="occ-bar"><div class="occ-fill" style="width:88%"></div></div></td><td><span class="status s-ok">稼働中</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="ch"><div class="ct">アラート</div><span style="background:#FCEBEB;color:#A32D2D;font-size:10px;padding:1px 6px;border-radius:8px">3件</span></div>
+          <div class="alert-row"><div class="alert-dot dot-r"></div><div style="flex:1"><div class="alert-title">入金期日超過 — 山田電通</div><div class="alert-sub">¥180,000 / 期日：3月15日</div></div><div class="alert-time">3日前</div></div>
+          <div class="alert-row"><div class="alert-dot dot-r"></div><div style="flex:1"><div class="alert-title">入金期日超過 — 博報電通広告</div><div class="alert-sub">¥120,000 / 期日：3月18日</div></div><div class="alert-time">本日</div></div>
+          <div class="alert-row"><div class="alert-dot dot-a"></div><div style="flex:1"><div class="alert-title">掲載満了 30日前 — 渋谷A-01</div><div class="alert-sub">4月24日満了 / 山田電通</div></div><div class="alert-time">1日前</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">月次売上推移</div></div>
+          <div class="chart-area">
+            <div class="bar-wrap"><div class="bar prev" style="height:42px"></div><div class="bar-label">10月</div></div>
+            <div class="bar-wrap"><div class="bar prev" style="height:55px"></div><div class="bar-label">11月</div></div>
+            <div class="bar-wrap"><div class="bar prev" style="height:50px"></div><div class="bar-label">12月</div></div>
+            <div class="bar-wrap"><div class="bar prev" style="height:62px"></div><div class="bar-label">1月</div></div>
+            <div class="bar-wrap"><div class="bar prev" style="height:58px"></div><div class="bar-label">2月</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:72px"></div><div class="bar-label">3月</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">入金管理（振込待ち）</div><button class="btn-sm">全件表示</button></div>
+      <table class="tbl">
+        <thead><tr><th>請求番号</th><th>代理店</th><th>建物 / ESC</th><th>掲載期間</th><th>金額（税込）</th><th>支払期日</th><th>ステータス</th><th></th></tr></thead>
+        <tbody>
+          <tr><td style="color:#888">INV-2026-0041</td><td>山田電通</td><td>渋谷スクランブル A-01</td><td>4月1日〜4月30日</td><td style="font-weight:600">¥198,000</td><td style="color:#A32D2D;font-weight:600">3月15日 ⚠</td><td><span class="status s-overdue">期日超過</span></td><td><button class="btn-primary-sm">入金確認</button></td></tr>
+          <tr><td style="color:#888">INV-2026-0038</td><td>博報電通広告</td><td>大阪グランフロント B-03</td><td>4月1日〜6月30日</td><td style="font-weight:600">¥462,000</td><td style="color:#A32D2D;font-weight:600">3月18日 ⚠</td><td><span class="status s-overdue">期日超過</span></td><td><button class="btn-primary-sm">入金確認</button></td></tr>
+          <tr><td style="color:#888">INV-2026-0045</td><td>東京広告社</td><td>新宿高島屋 C-02</td><td>5月1日〜5月31日</td><td style="font-weight:600">¥154,000</td><td>4月15日</td><td><span class="status s-pending">入金待ち</span></td><td><button class="btn-sm">督促メール</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'feature/**'
+      - 'fix/**'
+      - 'test/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if PR exists
+        id: check-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+
+          # developブランチが存在するか確認
+          if git ls-remote --heads origin develop | grep -q develop; then
+            BASE_BRANCH="develop"
+          else
+            BASE_BRANCH="main"
+          fi
+          echo "base_branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+
+          # 既存のPRを確認
+          EXISTING_PR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:$BRANCH&state=open" \
+            | jq length)
+
+          if [ "$EXISTING_PR" -gt 0 ]; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+            echo "PR already exists for branch $BRANCH"
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+            echo "No PR exists for branch $BRANCH"
+          fi
+
+      - name: Create PR
+        if: steps.check-pr.outputs.pr_exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          BASE="${{ steps.check-pr.outputs.base_branch }}"
+
+          # ブランチ名からPRタイトルを生成
+          # feat/add-login -> Add login
+          # fix/bug-123 -> Bug 123
+          TITLE=$(echo "$BRANCH" | sed 's|^[^/]*/||' | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/')
+
+          # PRタイプのプレフィックス
+          if [[ "$BRANCH" == feat/* ]] || [[ "$BRANCH" == feature/* ]]; then
+            PREFIX="feat:"
+          elif [[ "$BRANCH" == fix/* ]]; then
+            PREFIX="fix:"
+          elif [[ "$BRANCH" == test/* ]]; then
+            PREFIX="test:"
+          else
+            PREFIX=""
+          fi
+
+          # PR作成
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls" \
+            -d "{
+              \"title\": \"$PREFIX $TITLE\",
+              \"head\": \"$BRANCH\",
+              \"base\": \"$BASE\",
+              \"body\": \"Auto-generated PR for branch \`$BRANCH\`\n\nThis PR was automatically created when the branch was pushed.\"
+            }"
+
+          echo "PR created: $PREFIX $TITLE ($BRANCH -> $BASE)"

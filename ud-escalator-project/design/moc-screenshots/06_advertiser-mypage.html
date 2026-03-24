@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>MOC - 広告主マイページ | UDエスカレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;border-bottom:1px solid #e8e8e8}
+.logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.lm{width:26px;height:26px;border-radius:6px;background:#1A3A5C;display:flex;align-items:center;justify-content:center}
+.co-badge{font-size:11px;padding:3px 10px;background:#FAECE7;color:#993C1D;border-radius:6px;font-weight:600}
+.content{max-width:720px;margin:0 auto;padding:24px 20px 40px}
+.pt{font-size:18px;font-weight:600;margin-bottom:2px}
+.ps{font-size:12px;color:#888;margin-bottom:18px}
+.phase-warning{background:#FAEEDA;border:1px solid #EF9F27;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.pw-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pw-icon{width:20px;height:20px;border-radius:50%;background:#EF9F27;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pw-title{font-size:13px;font-weight:600;color:#633806}
+.pw-body{font-size:12px;color:#854F0B;line-height:1.7}
+.pw-body strong{color:#633806}
+.timeline{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:18px;margin-bottom:14px}
+.tl-title{font-size:13px;font-weight:600;margin-bottom:16px}
+.tl-steps{display:flex;align-items:flex-start}
+.tl-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.tl-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:calc(50% + 14px);right:calc(-50% + 14px);height:1.5px;background:#ddd}
+.tl-step.done::after{background:#1A3A5C}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;z-index:1;background:#fff;border:1px solid #ddd;color:#bbb}
+.tl-dot.done{background:#1A3A5C;border-color:#1A3A5C;color:#fff}
+.tl-dot.warn{background:#fff;border:2px solid #EF9F27;color:#854F0B}
+.tl-label{font-size:10px;color:#bbb;text-align:center;margin-top:6px}
+.tl-label.done{color:#666}.tl-label.warn{color:#854F0B;font-weight:600}
+.tl-status-box{margin-top:14px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.6;background:#FAEEDA;color:#854F0B}
+.lock-notice{margin-top:10px;background:#f8f8f8;border-radius:8px;padding:10px 14px;display:flex;align-items:flex-start;gap:8px}
+.ln-text{font-size:11px;color:#888;line-height:1.6}
+.ln-text strong{color:#1a1a1a}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.dc{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:14px 16px}
+.dc-label{font-size:10px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.dc-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+.dc-row:last-child{border-bottom:none}
+.dk{color:#888}.dv{font-weight:600;text-align:right}
+.action-card{background:#f8f8f8;border-radius:12px;border:1px solid #ebebeb;padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.ac-icon{width:32px;height:32px;border-radius:8px;background:#fff;border:1px solid #ebebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ac-body{flex:1}
+.ac-title{font-size:12px;font-weight:600;margin-bottom:1px}
+.ac-sub{font-size:11px;color:#888}
+.btn-ac{padding:6px 14px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:11px;cursor:pointer}
+.btn-ac-out{padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:11px;background:transparent;color:#666;cursor:pointer}
+.notif-card{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:14px 16px}
+.notif-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5}
+.notif-row:last-child{border-bottom:none;padding-bottom:0}
+.notif-row:first-child{padding-top:0}
+.nd{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.nd-b{background:#378ADD}.nd-g{background:#639922}.nd-gray{background:#ddd}
+.nt{font-size:12px;margin-bottom:1px}.ntm{font-size:10px;color:#bbb}
+.ro-note{text-align:center;font-size:11px;color:#bbb;margin-top:16px;padding:10px;background:#f8f8f8;border-radius:8px}
+.moc-label{position:fixed;top:8px;right:8px;background:#1A3A5C;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;font-family:monospace;z-index:999}
+</style></head><body>
+<div class="moc-label">MOC &#8212; 広告主マイページ</div>
+<div class="topnav">
+  <div class="logo"><div class="lm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="4" height="9" rx="1" fill="white" opacity="0.9"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white" opacity="0.6"/></svg></div>UDエスカレーター</div>
+  <div style="display:flex;align-items:center;gap:10px"><span class="co-badge">広告主</span><span style="font-size:13px;color:#888">株式会社ブランドX</span></div>
+</div>
+<div class="content">
+  <div class="pt">掲載状況マイページ</div>
+  <div class="ps">現在の掲載ステータスと詳細情報を確認できます（変更・操作は担当代理店へご連絡ください）</div>
+  <div class="phase-warning">
+    <div class="pw-head">
+      <div class="pw-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2L1 10h10L6 2z" stroke="white" stroke-width="1.2" stroke-linejoin="round" fill="none"/><path d="M6 5.5V7.5M6 8.5v.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+      <div class="pw-title">入稿データ確認中 &#8212; デザイン変更はお早めにご連絡ください</div>
+    </div>
+    <div class="pw-body">現在、担当代理店が入稿データを確認しています。<strong>施工が開始されるとデザイン変更は原則対応不可</strong>となります。<br>変更が必要な場合は<strong>施工開始前に担当代理店（山田電通）へ速やかにご連絡ください。</strong><br>施工開始後の変更は別途施工費が発生します。</div>
+  </div>
+  <div class="timeline">
+    <div class="tl-title">掲載ステータス</div>
+    <div class="tl-steps">
+      <div class="tl-step done"><div class="tl-dot done">&#10003;</div><div class="tl-label done">申込完了</div></div>
+      <div class="tl-step done"><div class="tl-dot done">&#10003;</div><div class="tl-label done">決済確認</div></div>
+      <div class="tl-step"><div class="tl-dot warn">3</div><div class="tl-label warn">入稿・確認中</div></div>
+      <div class="tl-step"><div class="tl-dot">4</div><div class="tl-label">施工手配</div></div>
+      <div class="tl-step"><div class="tl-dot">5</div><div class="tl-label">掲載中</div></div>
+      <div class="tl-step"><div class="tl-dot">6</div><div class="tl-label">掲載終了</div></div>
+    </div>
+    <div class="tl-status-box">担当代理店（山田電通）が入稿データを確認しています。<strong>この段階までがデザイン変更の最終タイミングです。</strong>施工手配（Step 4）に進むと変更には追加施工費が発生します。</div>
+    <div class="lock-notice">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;opacity:0.4;margin-top:1px"><rect x="4" y="7" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5.5 7V5.5a2.5 2.5 0 015 0V7" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      <div class="ln-text">Step 4（施工手配）以降は<strong>デザイン変更に追加施工費が発生</strong>します。変更ご希望の場合は担当代理店にご相談の上、追加費用のご承認が必要です。</div>
+    </div>
+  </div>
+  <div class="detail-grid">
+    <div class="dc"><div class="dc-label">掲載枠情報</div>
+      <div class="dc-row"><span class="dk">建物</span><span class="dv">渋谷スクランブルスクエア</span></div>
+      <div class="dc-row"><span class="dk">ESC</span><span class="dv">上り A-01（3F&#8594;4F）</span></div>
+      <div class="dc-row"><span class="dk">バナーサイズ</span><span class="dv">Aサイズ（120×30cm）</span></div>
+      <div class="dc-row"><span class="dk">1日利用者数</span><span class="dv">約 82,000人</span></div>
+    </div>
+    <div class="dc"><div class="dc-label">掲載期間・金額</div>
+      <div class="dc-row"><span class="dk">掲載開始</span><span class="dv">2026年5月1日</span></div>
+      <div class="dc-row"><span class="dk">掲載終了</span><span class="dv">2026年5月31日</span></div>
+      <div class="dc-row"><span class="dk">金額（税込）</span><span class="dv">&#165;198,000</span></div>
+      <div class="dc-row"><span class="dk">支払い</span><span class="dv" style="color:#3B6D11">カード決済 済</span></div>
+    </div>
+    <div class="dc"><div class="dc-label">担当代理店</div>
+      <div class="dc-row"><span class="dk">代理店名</span><span class="dv">山田電通</span></div>
+      <div class="dc-row"><span class="dk">担当者</span><span class="dv">山田 太郎</span></div>
+      <div class="dc-row"><span class="dk">連絡先</span><span class="dv" style="color:#185FA5">yamada@yamada-dtsu.jp</span></div>
+    </div>
+    <div class="dc"><div class="dc-label">入稿データ</div>
+      <div class="dc-row"><span class="dk">ファイル名</span><span class="dv">brandx_banner_A.pdf</span></div>
+      <div class="dc-row"><span class="dk">アップロード</span><span class="dv">3月22日 14:30</span></div>
+      <div class="dc-row"><span class="dk">確認ステータス</span><span class="dv" style="color:#854F0B">確認中</span></div>
+    </div>
+  </div>
+  <div class="action-card">
+    <div class="ac-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1.2" stroke="#666" stroke-width="1" fill="none"/><path d="M2 6.5h12" stroke="#666" stroke-width="0.8" opacity="0.5"/></svg></div>
+    <div class="ac-body"><div class="ac-title">バナーデータを差し替える（施工前のみ）</div><div class="ac-sub">施工手配前のみ対応可能 &#8212; 施工後は追加施工費が発生します</div></div>
+    <button class="btn-ac">ファイルを選択</button>
+  </div>
+  <div class="action-card">
+    <div class="ac-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#666" stroke-width="1" fill="none"/><path d="M8 5.5v3.5l2.5 1.5" stroke="#666" stroke-width="1" stroke-linecap="round"/></svg></div>
+    <div class="ac-body"><div class="ac-title">デザイン変更・施工費について相談する</div><div class="ac-sub">施工後の変更は別途費用が発生します。担当代理店にご相談ください。</div></div>
+    <button class="btn-ac-out">代理店に連絡</button>
+  </div>
+  <div class="notif-card">
+    <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px">通知履歴</div>
+    <div class="notif-row"><div class="nd nd-b"></div><div><div class="nt">入稿データを受領しました。施工前のデザイン変更は今が最終タイミングです。</div><div class="ntm">2026年3月22日 14:32</div></div></div>
+    <div class="notif-row"><div class="nd nd-g"></div><div><div class="nt">カード決済が完了しました。領収書をメールに送付しました。</div><div class="ntm">2026年3月20日 11:15</div></div></div>
+    <div class="notif-row"><div class="nd nd-gray"></div><div><div class="nt">お申込みを受け付けました。担当：山田電通 山田 太郎</div><div class="ntm">2026年3月20日 10:48</div></div></div>
+  </div>
+  <div class="ro-note">このページは閲覧専用です。掲載内容の変更・キャンセルは担当代理店（山田電通）へご連絡ください</div>
+</div>
+</body></html>

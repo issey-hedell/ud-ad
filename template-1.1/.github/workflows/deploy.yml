@@ -1,0 +1,316 @@
+name: Deploy Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+  repository_dispatch:
+    types: [test-completed]
+  workflow_run:
+    workflows: ["Test Automation"]
+    types:
+      - completed
+    branches:
+      - main
+      - develop
+      - 'feat/**'
+      - 'test/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # テスト成功時 または 手動トリガー時 または repository_dispatch時に実行
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'repository_dispatch' && github.event.client_payload.branch || github.event.workflow_run.head_branch || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Deploy Automation dependencies
+        working-directory: .github/deploy-automation
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Determine deployment environment
+        id: env
+        run: |
+          # イベントタイプに応じてブランチと環境を決定
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # 手動トリガー: inputs から取得
+            DEPLOY_ENV="${{ github.event.inputs.environment }}"
+            BRANCH="${{ github.ref_name }}"
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            # Test Automation からのトリガー: client_payload から取得
+            BRANCH="${{ github.event.client_payload.branch }}"
+            if [ "$BRANCH" = "main" ]; then
+              DEPLOY_ENV="production"
+            elif [ "$BRANCH" = "develop" ]; then
+              DEPLOY_ENV="staging"
+            else
+              DEPLOY_ENV="preview"
+            fi
+          else
+            # workflow_run トリガー
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            if [ "$BRANCH" = "main" ]; then
+              DEPLOY_ENV="production"
+            elif [ "$BRANCH" = "develop" ]; then
+              DEPLOY_ENV="staging"
+            else
+              DEPLOY_ENV="preview"
+            fi
+          fi
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> $GITHUB_ENV
+          echo "environment=$DEPLOY_ENV" >> $GITHUB_OUTPUT
+          echo "GITHUB_HEAD_BRANCH=$BRANCH" >> $GITHUB_ENV
+
+      - name: Check deploy-config.yml exists
+        id: check-config
+        run: |
+          echo "Checking for deploy-config.yml..."
+          ls -la deploy-config.yml 2>/dev/null || echo "File does not exist"
+          if [ -f "deploy-config.yml" ]; then
+            echo "config_exists=true" >> $GITHUB_OUTPUT
+            echo "deploy-config.yml found"
+          else
+            echo "config_exists=false" >> $GITHUB_OUTPUT
+            echo "deploy-config.yml not found - skipping deployment"
+          fi
+          echo "Result: config_exists=$(cat $GITHUB_OUTPUT | grep config_exists | cut -d= -f2)"
+
+      - name: Validate configuration
+        if: steps.check-config.outputs.config_exists == 'true'
+        working-directory: .github/deploy-automation
+        env:
+          # Vercel
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # AWS Common
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          # AWS S3
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          # AWS Amplify
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+          # AWS EC2
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          # AWS ECS
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          # Netlify
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
+          # Firebase
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          # Cloudflare
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Slack
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node src/index.js --validate
+
+      - name: Deploy
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: deploy
+        working-directory: .github/deploy-automation
+        env:
+          # Vercel
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # AWS Common
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          # AWS S3
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          # AWS Amplify
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+          # AWS EC2
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          # AWS ECS
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          # Netlify
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
+          # Firebase
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          # Cloudflare
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Slack
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # GitHub
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          # Environment
+          DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: node src/index.js
+
+      - name: Notify Slack
+        if: always() && steps.check-config.outputs.config_exists == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DEPLOY_STATUS: ${{ job.status }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          DEPLOY_PROVIDER: ${{ steps.deploy.outputs.provider }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping notification"
+            exit 0
+          fi
+
+          if [ "$DEPLOY_STATUS" = "success" ]; then
+            EMOJI="✅"
+            COLOR="good"
+            TEXT="Deployment successful"
+          else
+            EMOJI="❌"
+            COLOR="danger"
+            TEXT="Deployment failed"
+          fi
+
+          PAYLOAD=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "$COLOR",
+                "title": "$EMOJI Deploy Automation - $TEXT",
+                "fields": [
+                  {
+                    "title": "Repository",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Environment",
+                    "value": "$DEPLOY_ENV",
+                    "short": true
+                  },
+                  {
+                    "title": "Provider",
+                    "value": "$DEPLOY_PROVIDER",
+                    "short": true
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "${{ github.event.workflow_run.head_branch }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Deploy URL",
+                    "value": "$DEPLOY_URL",
+                    "short": false
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+
+      # Phase 4へのトリガー（Productionデプロイ時のみ）
+      - name: Trigger Phase 4 (Monitoring Setup)
+        if: success() && steps.check-config.outputs.config_exists == 'true' && env.DEPLOY_ENV == 'production'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: deploy-completed
+          client-payload: |
+            {
+              "environment": "${{ env.DEPLOY_ENV }}",
+              "deploy_url": "${{ steps.deploy.outputs.url }}",
+              "provider": "${{ steps.deploy.outputs.provider }}",
+              "project_name": "${{ github.event.repository.name }}"
+            }
+
+      # 自動マージ（feature/* → develop or main）
+      - name: Auto Merge PR
+        if: success() && env.DEPLOY_ENV != 'production'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+
+          # develop → main のPRは自動マージしない（ユーザートリガーで実行）
+          if [ "$BRANCH" = "develop" ]; then
+            echo "develop branch - skipping auto merge (requires user trigger)"
+            exit 0
+          fi
+
+          # feature/* ブランチのみ自動マージ
+          if [[ "$BRANCH" == feat/* ]] || [[ "$BRANCH" == feature/* ]] || [[ "$BRANCH" == fix/* ]] || [[ "$BRANCH" == test/* ]]; then
+            echo "Auto merging branch: $BRANCH"
+
+            # PRを取得
+            PR_NUMBER="${{ github.event.workflow_run.pull_requests[0].number }}"
+
+            if [ -n "$PR_NUMBER" ]; then
+              echo "Merging PR #$PR_NUMBER"
+              curl -X PUT \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/merge" \
+                -d '{"merge_method":"squash","commit_title":"Auto merge: '"$BRANCH"'"}'
+
+              # マージ後にブランチを削除
+              curl -X DELETE \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/$BRANCH"
+
+              echo "PR #$PR_NUMBER merged and branch deleted"
+            else
+              echo "No PR found for branch $BRANCH"
+            fi
+          else
+            echo "Branch $BRANCH is not a feature branch - skipping auto merge"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Provider:** ${{ steps.deploy.outputs.provider || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ env.DEPLOY_ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy URL:** ${{ steps.deploy.outputs.url || 'N/A' }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,112 @@
+# デプロイ自動化設定ファイル（サンプル）
+# このファイルをコピーして deploy-config.yml を作成してください
+
+# デプロイプロバイダー選択
+# 使用可能: vercel, aws-s3, aws-amplify, aws-ec2, aws-ecs, netlify, firebase, cloudflare, custom
+provider: vercel
+
+# 環境設定
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+
+  staging:
+    branch: develop  # developブランチを使わない場合は "" または削除
+    auto_deploy: true
+
+  preview:
+    auto_deploy: true
+
+# プロバイダー別設定
+providers:
+  # 1. Vercel
+  vercel:
+    org_id: ${VERCEL_ORG_ID}
+    project_id: ${VERCEL_PROJECT_ID}
+    token: ${VERCEL_TOKEN}
+
+  # 2. AWS S3 + CloudFront
+  aws_s3:
+    bucket: my-app-bucket
+    distribution_id: ${CLOUDFRONT_DISTRIBUTION_ID}
+    region: us-east-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    build_command: npm run build
+    output_directory: out
+
+  # 3. AWS Amplify
+  aws_amplify:
+    app_id: ${AMPLIFY_APP_ID}
+    region: us-east-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+  # 4. AWS EC2
+  aws_ec2:
+    host: ${EC2_HOST}
+    user: ${EC2_USER}
+    ssh_key: ${EC2_SSH_KEY}
+    port: 22
+    app_dir: /var/www/app
+    deploy_script: |
+      cd ${app_dir}
+      git pull origin ${branch}
+      npm install --production
+      npm run build
+      pm2 restart app
+    url: https://example.com
+
+  # 5. AWS ECS
+  aws_ecs:
+    cluster: my-cluster
+    service: my-service
+    task_definition: my-task
+    container_name: app
+    ecr_repo: ${ECR_REPO}
+    region: us-east-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    url: https://example.com
+
+  # 6. Netlify
+  netlify:
+    site_id: ${NETLIFY_SITE_ID}
+    token: ${NETLIFY_TOKEN}
+    build_command: npm run build
+    publish_directory: out
+
+  # 7. Firebase Hosting
+  firebase:
+    project_id: ${FIREBASE_PROJECT_ID}
+    token: ${FIREBASE_TOKEN}
+    preview_channel: preview
+
+  # 8. Cloudflare Pages
+  cloudflare:
+    account_id: ${CLOUDFLARE_ACCOUNT_ID}
+    project_name: my-app
+    token: ${CLOUDFLARE_API_TOKEN}
+    build_command: npm run build
+    output_directory: out
+
+  # 9. Custom
+  custom:
+    production_command: |
+      npm run deploy:prod
+    staging_command: |
+      npm run deploy:staging
+    preview_command: |
+      npm run deploy:preview
+    url: https://example.com
+
+# 通知設定
+notifications:
+  slack:
+    enabled: false
+    webhook_url: ${SLACK_WEBHOOK_URL}
+
+  github:
+    enabled: true
+    comment_on_pr: true

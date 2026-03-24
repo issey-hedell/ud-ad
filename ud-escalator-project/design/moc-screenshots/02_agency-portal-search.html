@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MOC - 代理店ポータル（空き枠検索）| UDエスカレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;border-bottom:1px solid #e8e8e8;background:#fff}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.lm{width:28px;height:28px;border-radius:6px;background:#1A3A5C;display:flex;align-items:center;justify-content:center}
+.lm svg{width:16px;height:16px}
+.nl{padding:6px 14px;font-size:13px;color:#666;border-radius:8px;cursor:pointer;border:none;background:transparent}
+.nl.active{color:#1A3A5C;font-weight:600;border-bottom:2px solid #1A3A5C;border-radius:0}
+.avatar{width:32px;height:32px;border-radius:50%;background:#B5D4F4;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#0C447C}
+.main{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:210px;padding:16px 12px;border-right:1px solid #f0f0f0;flex-shrink:0}
+.sb-label{font-size:10px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;padding:0 8px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;color:#666;cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.sb-item:hover{background:#f5f5f5}
+.sb-item.active{background:#E6F1FB;color:#185FA5;font-weight:600}
+.badge{background:#E6F1FB;color:#185FA5;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:auto}
+.badge-gray{background:#f0f0f0;color:#888;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:auto}
+.content{flex:1;padding:20px 24px;background:#f8f9fa}
+.pt{font-size:17px;font-weight:600;margin-bottom:2px}
+.ps{font-size:12px;color:#888;margin-bottom:16px}
+.filter-panel{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:16px 18px;margin-bottom:12px}
+.fp-row1{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.fp-row2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em}
+select,input[type=text]{padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;width:100%}
+.btn-search{padding:8px 18px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;height:34px}
+.btn-reset{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:transparent;color:#666;cursor:pointer;height:34px}
+.type-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.type-tab{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#666}
+.type-tab.active{border-color:#185FA5;background:#E6F1FB;color:#185FA5;font-weight:600}
+.region-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.rs-card{background:#fff;border-radius:8px;border:1px solid #ebebeb;padding:10px 12px;cursor:pointer}
+.rs-card.selected{border-color:#1A3A5C;background:#E6F1FB}
+.rs-area{font-size:11px;font-weight:600;color:#666;margin-bottom:4px}
+.rs-card.selected .rs-area{color:#185FA5}
+.rs-count{font-size:18px;font-weight:600;color:#1a1a1a}
+.rs-card.selected .rs-count{color:#0C447C}
+.rs-sub{font-size:10px;color:#bbb;margin-top:2px}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sort-sel{padding:5px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:12px;background:#fff;color:#888}
+.view-toggle{display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden}
+.vt-btn{padding:5px 10px;font-size:11px;background:transparent;border:none;cursor:pointer;color:#bbb}
+.vt-btn.active{background:#1A3A5C;color:#fff}
+.slots-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.slot-card{background:#fff;border-radius:12px;border:1px solid #ebebeb;padding:14px 16px;cursor:pointer}
+.slot-card:hover{border-color:#1A3A5C}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.s-building{font-size:13px;font-weight:600}
+.s-addr{font-size:11px;color:#888;margin-top:2px}
+.sbadge{display:inline-flex;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:600}
+.s-open{background:#EAF3DE;color:#3B6D11}.s-few{background:#FAEEDA;color:#854F0B}
+.type-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:6px;background:#f0f0f0;color:#666;margin-bottom:8px}
+.s-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}
+.mk{font-size:10px;color:#bbb}.mv{font-size:11px;font-weight:600}
+.s-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:10px;padding:2px 7px;background:#E6F1FB;color:#185FA5;border-radius:8px}
+.sf{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #f5f5f5}
+.s-price{font-size:14px;font-weight:600}.s-price span{font-size:10px;font-weight:400;color:#bbb}
+.btn-rsv{padding:5px 14px;background:#1A3A5C;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-dtl{padding:5px 10px;background:transparent;color:#666;border:1px solid #ddd;border-radius:8px;font-size:11px;cursor:pointer;margin-right:5px}
+.moc-label{position:fixed;top:8px;right:8px;background:#1A3A5C;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;font-family:monospace;z-index:999}
+</style>
+</head>
+<body>
+<div class="moc-label">MOC — 代理店ポータル（空き枠検索）</div>
+<div class="topnav">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="logo"><div class="lm"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="4" height="9" rx="1" fill="white" opacity="0.9"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white" opacity="0.6"/></svg></div>UDエスカレーター</div>
+    <div style="display:flex;gap:4px">
+      <button class="nl active">空き枠を探す</button><button class="nl">案件管理</button><button class="nl">請求書</button><button class="nl">広告主リンク発行</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px"><div class="avatar">山田</div><span style="font-size:12px;color:#888">山田電通</span></div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div style="margin-bottom:20px">
+      <div class="sb-label">メニュー</div>
+      <button class="sb-item active">空き枠検索</button>
+      <button class="sb-item">案件一覧 <span class="badge">3</span></button>
+      <button class="sb-item">請求書 <span class="badge">1</span></button>
+      <button class="sb-item">広告主管理</button>
+    </div>
+    <div>
+      <div class="sb-label">エリアで絞る</div>
+      <button class="sb-item active" style="font-size:11px">すべてのエリア <span class="badge">148</span></button>
+      <button class="sb-item" style="font-size:11px">東京・渋谷 <span class="badge-gray">42</span></button>
+      <button class="sb-item" style="font-size:11px">東京・新宿 <span class="badge-gray">31</span></button>
+      <button class="sb-item" style="font-size:11px">東京・池袋 <span class="badge-gray">23</span></button>
+      <button class="sb-item" style="font-size:11px">東京・品川 <span class="badge-gray">17</span></button>
+      <button class="sb-item" style="font-size:11px">神奈川 <span class="badge-gray">14</span></button>
+      <button class="sb-item" style="font-size:11px">大阪 <span class="badge-gray">21</span></button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="pt">空き枠を探す</div>
+    <div class="ps">エリア・施設種別・業種・サイズから絞り込めます</div>
+    <div class="filter-panel">
+      <div class="fp-row1">
+        <div class="fg"><div class="fl">建物名・駅名・フリーワード</div><input type="text" placeholder="例：渋谷、新宿三丁目、ルミネ…"/></div>
+        <div class="fg"><div class="fl">都道府県</div><select><option>すべて</option><option selected>東京都</option><option>大阪府</option><option>神奈川県</option></select></div>
+        <div class="fg"><div class="fl">エリア（市区）</div><select><option>すべて</option><option>渋谷区</option><option>新宿区</option><option>豊島区</option><option>港区</option></select></div>
+      </div>
+      <div class="fp-row2">
+        <div class="fg"><div class="fl">施設種別</div><select><option>すべて</option><option>商業施設・モール</option><option>駅・ターミナル</option><option>オフィスビル</option><option>ホテル</option><option>病院・医療</option></select></div>
+        <div class="fg"><div class="fl">推奨業種</div><select><option>指定なし</option><option>ファッション</option><option>飲食・カフェ</option><option>金融・保険</option><option>コスメ・美容</option></select></div>
+        <div class="fg"><div class="fl">バナーサイズ</div><select><option>すべて</option><option>Aサイズ（120×30）</option><option>Bサイズ（80×20）</option><option>Cサイズ（60×15）</option></select></div>
+        <div class="fg"><div class="fl">掲載期間</div><select><option>1ヶ月</option><option>3ヶ月</option><option>6ヶ月</option><option>1年</option></select></div>
+        <div style="display:flex;gap:6px"><button class="btn-reset">リセット</button><button class="btn-search">検索</button></div>
+      </div>
+    </div>
+    <div class="type-tabs">
+      <div class="type-tab active" onclick="setType(this)">すべて <span style="font-size:10px;opacity:0.7;margin-left:2px">148</span></div>
+      <div class="type-tab" onclick="setType(this)">商業施設 <span style="font-size:10px;opacity:0.7;margin-left:2px">68</span></div>
+      <div class="type-tab" onclick="setType(this)">駅・ターミナル <span style="font-size:10px;opacity:0.7;margin-left:2px">34</span></div>
+      <div class="type-tab" onclick="setType(this)">オフィスビル <span style="font-size:10px;opacity:0.7;margin-left:2px">28</span></div>
+      <div class="type-tab" onclick="setType(this)">ホテル <span style="font-size:10px;opacity:0.7;margin-left:2px">12</span></div>
+      <div class="type-tab" onclick="setType(this)">病院・医療 <span style="font-size:10px;opacity:0.7;margin-left:2px">6</span></div>
+    </div>
+    <div class="region-summary">
+      <div class="rs-card selected" onclick="setRegion(this)"><div class="rs-area">すべて</div><div class="rs-count">148</div><div class="rs-sub">全国</div></div>
+      <div class="rs-card" onclick="setRegion(this)"><div class="rs-area">渋谷・恵比寿</div><div class="rs-count">42</div><div class="rs-sub">12建物</div></div>
+      <div class="rs-card" onclick="setRegion(this)"><div class="rs-area">新宿・代々木</div><div class="rs-count">31</div><div class="rs-sub">8建物</div></div>
+      <div class="rs-card" onclick="setRegion(this)"><div class="rs-area">池袋・豊島</div><div class="rs-count">23</div><div class="rs-sub">6建物</div></div>
+      <div class="rs-card" onclick="setRegion(this)"><div class="rs-area">大阪・梅田</div><div class="rs-count">21</div><div class="rs-sub">5建物</div></div>
+    </div>
+    <div class="result-header">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600">148件</span><span style="font-size:12px;color:#888">の空き枠が見つかりました</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select class="sort-sel"><option>おすすめ順</option><option>価格が安い順</option><option>利用者数が多い順</option><option>掲載開始が早い順</option></select>
+        <div class="view-toggle"><button class="vt-btn active">▦</button><button class="vt-btn">☰</button></div>
+      </div>
+    </div>
+    <div class="slots-grid">
+      <div class="slot-card">
+        <div class="sh"><div><div class="s-building">渋谷スクランブルスクエア</div><div class="s-addr">東京都渋谷区 · 渋谷駅直結</div></div><span class="sbadge s-open">空き多数</span></div>
+        <div><span class="type-badge">商業施設</span></div>
+        <div class="s-meta"><div><div class="mk">ESC</div><div class="mv">上り A-01（3F→4F）</div></div><div><div class="mk">1日利用者数</div><div class="mv">約 82,000人</div></div><div><div class="mk">バナーサイズ</div><div class="mv">Aサイズ（120×30cm）</div></div><div><div class="mk">掲載開始</div><div class="mv">2026年4月1日〜</div></div></div>
+        <div class="s-tags"><span class="tag">ファッション</span><span class="tag">コスメ</span><span class="tag">飲食</span></div>
+        <div class="sf"><div class="s-price">¥180,000 <span>/ 月（税別）</span></div><div><button class="btn-dtl">詳細</button><button class="btn-rsv">予約へ</button></div></div>
+      </div>
+      <div class="slot-card">
+        <div class="sh"><div><div class="s-building">新宿駅南口 / JR構内</div><div class="s-addr">東京都新宿区 · 新宿駅構内</div></div><span class="sbadge s-few">残り3枠</span></div>
+        <div><span class="type-badge">駅・ターミナル</span></div>
+        <div class="s-meta"><div><div class="mk">ESC</div><div class="mv">下り B-03（2F→1F）</div></div><div><div class="mk">1日利用者数</div><div class="mv">約 210,000人</div></div><div><div class="mk">バナーサイズ</div><div class="mv">Bサイズ（80×20cm）</div></div><div><div class="mk">掲載開始</div><div class="mv">2026年4月15日〜</div></div></div>
+        <div class="s-tags"><span class="tag">交通・移動</span><span class="tag">飲食</span><span class="tag">金融</span></div>
+        <div class="sf"><div class="s-price">¥240,000 <span>/ 月（税別）</span></div><div><button class="btn-dtl">詳細</button><button class="btn-rsv">予約へ</button></div></div>
+      </div>
+      <div class="slot-card">
+        <div class="sh"><div><div class="s-building">大阪グランフロント北館</div><div class="s-addr">大阪府大阪市 · 大阪駅直結</div></div><span class="sbadge s-open">空き多数</span></div>
+        <div><span class="type-badge">商業施設</span></div>
+        <div class="s-meta"><div><div class="mk">ESC</div><div class="mv">上り C-01（1F→2F）</div></div><div><div class="mk">1日利用者数</div><div class="mv">約 95,000人</div></div><div><div class="mk">バナーサイズ</div><div class="mv">Aサイズ（120×30cm）</div></div><div><div class="mk">掲載開始</div><div class="mv">2026年5月1日〜</div></div></div>
+        <div class="s-tags"><span class="tag">ファッション</span><span class="tag">グルメ</span><span class="tag">観光</span></div>
+        <div class="sf"><div class="s-price">¥160,000 <span>/ 月（税別）</span></div><div><button class="btn-dtl">詳細</button><button class="btn-rsv">予約へ</button></div></div>
+      </div>
+      <div class="slot-card">
+        <div class="sh"><div><div class="s-building">品川インターシティA棟</div><div class="s-addr">東京都港区 · 品川駅直結</div></div><span class="sbadge s-open">空き多数</span></div>
+        <div><span class="type-badge">オフィスビル</span></div>
+        <div class="s-meta"><div><div class="mk">ESC</div><div class="mv">上り A-04（B1F→1F）</div></div><div><div class="mk">1日利用者数</div><div class="mv">約 48,000人</div></div><div><div class="mk">バナーサイズ</div><div class="mv">Cサイズ（60×15cm）</div></div><div><div class="mk">掲載開始</div><div class="mv">2026年5月1日〜</div></div></div>
+        <div class="s-tags"><span class="tag">IT・テック</span><span class="tag">金融</span><span class="tag">BtoB</span></div>
+        <div class="sf"><div class="s-price">¥78,000 <span>/ 月（税別）</span></div><div><button class="btn-dtl">詳細</button><button class="btn-rsv">予約へ</button></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function setType(el){document.querySelectorAll('.type-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
+function setRegion(el){document.querySelectorAll('.rs-card').forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}
+</script>
+</body>
+</html>

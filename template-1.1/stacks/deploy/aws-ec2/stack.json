@@ -1,0 +1,17 @@
+{
+  "name": "aws-ec2",
+  "displayName": "AWS EC2",
+  "category": "deploy",
+  "description": "Deploy to AWS EC2 instances",
+  "files": {
+    "include": [
+      "stacks/deploy/aws-ec2/checklists/**/*",
+      ".github/workflows/deploy-aws-ec2.yml"
+    ],
+    "exclude": [
+      "docs/checklists/05_vercel.md"
+    ]
+  },
+  "dependencies": {},
+  "claudeRules": null
+}

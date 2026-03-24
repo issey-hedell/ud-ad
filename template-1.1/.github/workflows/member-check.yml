@@ -1,0 +1,49 @@
+name: Member Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-member:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Get PR author
+        id: author
+        run: echo "github_username=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+      
+      - name: Check member registration
+        run: |
+          AUTHOR="${{ steps.author.outputs.github_username }}"
+          CONFIG_FILE="docs/PROJECT_CONFIG.md"
+          
+          echo "🔍 チェック中: $AUTHOR"
+          
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "❌ $CONFIG_FILE が見つかりません"
+            exit 1
+          fi
+          
+          # メンバー一覧セクションにGitHubユーザー名があるか確認
+          if grep -q "$AUTHOR" "$CONFIG_FILE"; then
+            echo "✅ メンバー確認OK: $AUTHOR"
+          else
+            echo ""
+            echo "╔════════════════════════════════════════════════════════════╗"
+            echo "║  ❌ メンバー登録が必要です                                  ║"
+            echo "╠════════════════════════════════════════════════════════════╣"
+            echo "║                                                            ║"
+            echo "║  $AUTHOR がメンバー一覧に登録されていません。               ║"
+            echo "║                                                            ║"
+            echo "║  以下の手順で登録してください：                             ║"
+            echo "║  1. docs/PROJECT_CONFIG.md を開く                          ║"
+            echo "║  2. 「メンバー別設定」に自分の行を追加                      ║"
+            echo "║  3. このPRに追加コミット                                    ║"
+            echo "║                                                            ║"
+            echo "╚════════════════════════════════════════════════════════════╝"
+            echo ""
+            exit 1
+          fi

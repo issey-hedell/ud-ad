@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.secrets
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+
+# Misc
+*.local
+
+# Claude Code 一時ファイル
+tmpclaude-*
+tmpclaude-*-cwd
+
+# 実装指示書
+*_INSTRUCTION.md
+*_FIX.md
+*_TASKS.md
+*_INVESTIGATION.md
+logs/

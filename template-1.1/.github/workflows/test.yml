@@ -1,0 +1,248 @@
+name: Test Automation
+
+on:
+  repository_dispatch:
+    types: [guardian-ai-completed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      # 1. チェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.branch || github.head_ref }}
+
+      # 2. Node.js セットアップ
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. プロジェクトの依存関係インストール
+      - name: Install project dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install
+            fi
+          else
+            echo "No package.json found, skipping project dependencies"
+          fi
+
+      # 4. テスト自動化の依存関係インストール
+      - name: Install test automation dependencies
+        working-directory: .github/test-automation
+        run: npm ci
+
+      # 5. Playwright ブラウザインストール
+      - name: Install Playwright Browsers
+        working-directory: .github/test-automation
+        run: npx playwright install --with-deps chromium
+
+      # 6. ユニットテスト実行
+      - name: Run Unit Tests
+        id: unit-tests
+        working-directory: .github/test-automation
+        run: |
+          npm run test:unit || echo "unit_tests_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      # 7. コンポーネントテスト実行
+      - name: Run Component Tests
+        id: component-tests
+        working-directory: .github/test-automation
+        run: |
+          npm run test:component || echo "component_tests_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      # 8. E2Eテスト実行
+      - name: Run E2E Tests
+        id: e2e-tests
+        working-directory: .github/test-automation
+        run: |
+          npm run test:e2e || echo "e2e_tests_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      # 9. テストレポート生成
+      - name: Generate Test Report
+        if: always()
+        working-directory: .github/test-automation
+        run: npm run report:generate
+
+      # 10. テストレポートをアップロード
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: test-report
+          path: .github/test-automation/reports/
+          retention-days: 3
+
+      # 11. Playwright レポートをアップロード
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report
+          path: .github/test-automation/playwright-report/
+          retention-days: 3
+
+      # 12. テスト結果を評価
+      - name: Evaluate Test Results
+        id: evaluate
+        run: |
+          FAILED=false
+          # outputs が設定されていなければ成功とみなす
+          if [ "${{ steps.unit-tests.outputs.unit_tests_failed || 'false' }}" = "true" ]; then
+            FAILED=true
+          fi
+          if [ "${{ steps.component-tests.outputs.component_tests_failed || 'false' }}" = "true" ]; then
+            FAILED=true
+          fi
+          if [ "${{ steps.e2e-tests.outputs.e2e_tests_failed || 'false' }}" = "true" ]; then
+            FAILED=true
+          fi
+
+          if [ "$FAILED" = "true" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+          else
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      # 13. Slack通知（テスト失敗時）
+      - name: Notify Slack (Test Failure)
+        if: steps.evaluate.outputs.status == 'failed'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          UNIT_STATUS: ${{ steps.unit-tests.outputs.unit_tests_failed == 'true' && '❌' || '✅' }}
+          COMPONENT_STATUS: ${{ steps.component-tests.outputs.component_tests_failed == 'true' && '❌' || '✅' }}
+          E2E_STATUS: ${{ steps.e2e-tests.outputs.e2e_tests_failed == 'true' && '❌' || '✅' }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set, skipping notification"
+            exit 0
+          fi
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"🔴 Test Automation Failed\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {
+                    \"type\": \"plain_text\",
+                    \"text\": \"🔴 Test Automation Failed\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*PR:* <${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}>\\n*Author:* ${{ github.event.pull_request.user.login }}\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*Failed Tests:*\\n• Unit Tests: $UNIT_STATUS\\n• Component Tests: $COMPONENT_STATUS\\n• E2E Tests: $E2E_STATUS\"
+                }
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": {
+                        \"type\": \"plain_text\",
+                        \"text\": \"View PR\"
+                      },
+                      \"url\": \"${{ github.event.pull_request.html_url }}\",
+                      \"style\": \"danger\"
+                    }
+                  ]
+                }
+              ]
+            }"
+
+      # 14. ジョブサマリーを出力
+      - name: Output Job Summary
+        if: always()
+        run: |
+          echo "## 🧪 Test Automation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.unit-tests.outputs.unit_tests_failed }}" = "true" ]; then
+            echo "| Unit Tests | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Unit Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.component-tests.outputs.component_tests_failed }}" = "true" ]; then
+            echo "| Component Tests | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Component Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.e2e-tests.outputs.e2e_tests_failed }}" = "true" ]; then
+            echo "| E2E Tests | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| E2E Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.evaluate.outputs.status }}" = "passed" ]; then
+            echo "### ✅ All Tests Passed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Great job! All tests are passing. 🎉" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Ready to proceed to deployment phase" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Some Tests Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please review the failed tests and fix the issues." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔍 Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "- Review test reports in Artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- Fix failing tests" >> $GITHUB_STEP_SUMMARY
+            echo "- Push fixes to trigger re-test" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # 15. 次フェーズへ（デプロイ自動化）
+      - name: Trigger Deploy Workflow
+        if: success() && steps.evaluate.outputs.status == 'passed'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          event-type: test-completed
+          client-payload: |
+            {
+              "branch": "${{ github.event.client_payload.branch || github.head_ref || github.ref_name }}",
+              "pr_number": "${{ github.event.client_payload.pr_number || github.event.pull_request.number }}",
+              "test_status": "${{ steps.evaluate.outputs.status }}"
+            }

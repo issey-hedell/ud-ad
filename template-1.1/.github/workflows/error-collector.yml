@@ -1,0 +1,105 @@
+name: Error Log Collector
+
+on:
+  workflow_run:
+    workflows: ["Test Automation", "Deploy Automation", "Guardian AI - Code Quality Check"]
+    types:
+      - completed
+
+jobs:
+  collect-errors:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Collect Error Information
+        id: collect
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          TIME=$(date +%H:%M:%S)
+
+          # ワークフロー名をファイル名用に変換
+          WORKFLOW_SLUG=$(echo "$WORKFLOW_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-')
+
+          # エラーログファイル名
+          LOG_FILE="docs/error-logs/${DATE}_${WORKFLOW_SLUG}.md"
+
+          echo "log_file=$LOG_FILE" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+          echo "time=$TIME" >> $GITHUB_OUTPUT
+
+          # ログ取得
+          LOGS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$WORKFLOW_RUN_ID/logs" \
+            -L 2>&1 | head -c 5000 || echo "Failed to fetch logs")
+
+          # エラーログファイル作成
+          mkdir -p docs/error-logs
+
+          cat > "$LOG_FILE" << EOF
+          ## ワークフロー失敗: $WORKFLOW_NAME
+
+          **日時**: $DATE $TIME
+          **ブランチ**: $BRANCH
+          **ワークフロー**: $WORKFLOW_NAME
+          **Run ID**: $WORKFLOW_RUN_ID
+          **結果**: $CONCLUSION
+
+          ### ワークフローURL
+          https://github.com/${{ github.repository }}/actions/runs/$WORKFLOW_RUN_ID
+
+          ### エラー概要
+          ワークフロー「$WORKFLOW_NAME」が失敗しました。
+          詳細は上記URLから確認してください。
+
+          ---
+
+          **原因**: （要調査）
+
+          **解決方法**: （要記入）
+
+          **関連コミット**: ${{ github.event.workflow_run.head_sha }}
+          EOF
+
+      - name: Update Error Log Index
+        run: |
+          LOG_FILE="${{ steps.collect.outputs.log_file }}"
+          DATE="${{ steps.collect.outputs.date }}"
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+
+          # README.mdのログ一覧に追加（重複チェック）
+          if ! grep -q "$LOG_FILE" docs/error-logs/README.md 2>/dev/null; then
+            # ログ一覧テーブルの末尾に追加
+            sed -i "/^| 日付 | ファイル | 内容 |/a | $DATE | [$(basename $LOG_FILE)](.\/$(basename $LOG_FILE)) | $WORKFLOW_NAME 失敗 |" docs/error-logs/README.md || true
+          fi
+
+      - name: Commit Error Log
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add docs/error-logs/
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "docs: エラーログ自動追加 - ${{ github.event.workflow_run.name }}"
+            git push
+          fi

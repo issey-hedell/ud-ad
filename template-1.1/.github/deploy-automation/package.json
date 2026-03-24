@@ -1,0 +1,27 @@
+{
+  "name": "deploy-automation",
+  "version": "1.0.0",
+  "description": "Multi-provider deployment automation for Phase 3",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "node src/index.js",
+    "validate": "node src/index.js --validate",
+    "test": "echo \"Tests not implemented yet\" && exit 0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "@aws-sdk/client-s3": "^3.490.0",
+    "@aws-sdk/client-cloudfront": "^3.490.0",
+    "@aws-sdk/client-amplify": "^3.490.0",
+    "@aws-sdk/client-ecs": "^3.490.0",
+    "@aws-sdk/client-ecr": "^3.490.0",
+    "@octokit/rest": "^20.0.0",
+    "node-ssh": "^13.1.0",
+    "mime-types": "^2.1.35"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

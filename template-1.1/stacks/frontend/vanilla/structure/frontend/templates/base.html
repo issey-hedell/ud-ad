@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="nav-brand">{{ app_name }}</a>
+        <div class="nav-menu">
+          <a href="/" class="nav-link">ホーム</a>
+          <a href="/about" class="nav-link">About</a>
+          {% if user %}
+            <a href="/dashboard" class="nav-link">ダッシュボード</a>
+            <a href="/logout" class="nav-link">ログアウト</a>
+          {% else %}
+            <a href="/login" class="nav-link">ログイン</a>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="text-center">&copy; 2024 {{ app_name }}. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/api.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

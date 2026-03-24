@@ -1,0 +1,150 @@
+# 監視・運用自動化設定ファイル
+# Phase 4: Monitoring Automation
+#
+# 使い方:
+# 1. このファイルを monitoring-config.yml にコピー
+# 2. provider を選択（sentry, datadog, cloudwatch, newrelic, custom）
+# 3. 選択したプロバイダーの設定を記入
+# 4. GitHub Secrets に認証情報を設定
+
+# モニタリングプロバイダー選択（必須）
+# 使用可能: sentry, datadog, cloudwatch, newrelic, custom
+provider: sentry
+
+# 監視対象環境（必須）
+environments:
+  production:
+    enabled: true
+
+  staging:
+    enabled: false  # Staging環境の監視が必要な場合はtrueに
+
+  preview:
+    enabled: false  # Preview環境の監視が必要な場合はtrueに
+
+# プロバイダー別設定
+providers:
+  # 1. Sentry - エラートラッキング、パフォーマンス監視
+  sentry:
+    organization: ${SENTRY_ORG}
+    project: ${SENTRY_PROJECT}
+    auth_token: ${SENTRY_AUTH_TOKEN}
+    dsn: ${SENTRY_DSN}  # クライアント用DSN
+
+    # エラートラッキング
+    error_tracking:
+      enabled: true
+      sample_rate: 1.0  # 100%
+
+    # パフォーマンス監視
+    performance:
+      enabled: true
+      traces_sample_rate: 0.1  # 10%
+
+    # リリース設定
+    release:
+      auto_create: true
+      finalize: true
+
+    # ソースマップ
+    sourcemaps:
+      enabled: true
+      upload_path: .next  # または build, dist
+
+    # アラート
+    alerts:
+      enabled: true
+      slack_webhook: ${SLACK_WEBHOOK_URL}
+      email: ${ALERT_EMAIL}
+
+  # 2. Datadog - APM、インフラ監視、ログ管理
+  datadog:
+    api_key: ${DATADOG_API_KEY}
+    app_key: ${DATADOG_APP_KEY}
+    site: datadoghq.com  # または datadoghq.eu
+
+    # APM
+    apm:
+      enabled: true
+      service_name: ${PROJECT_NAME}
+      env: production
+
+    # ログ管理
+    logs:
+      enabled: true
+
+    # インフラ監視
+    infrastructure:
+      enabled: true
+
+    # アラート
+    alerts:
+      enabled: true
+      slack_webhook: ${SLACK_WEBHOOK_URL}
+
+  # 3. AWS CloudWatch - AWS環境の統合監視
+  cloudwatch:
+    region: us-east-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+    # ログ グループ
+    log_group: /aws/lambda/${PROJECT_NAME}
+
+    # メトリクス
+    metrics:
+      enabled: true
+      namespace: ${PROJECT_NAME}
+
+    # アラーム
+    alarms:
+      enabled: true
+      sns_topic: ${SNS_TOPIC_ARN}
+
+  # 4. New Relic - APM、パフォーマンス監視
+  newrelic:
+    account_id: ${NEWRELIC_ACCOUNT_ID}
+    api_key: ${NEWRELIC_API_KEY}
+    license_key: ${NEWRELIC_LICENSE_KEY}
+
+    # APM
+    apm:
+      enabled: true
+      app_name: ${PROJECT_NAME}
+
+    # ブラウザ監視
+    browser:
+      enabled: true
+
+    # アラート
+    alerts:
+      enabled: true
+      slack_webhook: ${SLACK_WEBHOOK_URL}
+
+  # 5. Custom - 任意のスクリプト実行
+  custom:
+    setup_command: |
+      # カスタムセットアップスクリプト
+      echo "Setting up custom monitoring..."
+      ./scripts/setup-monitoring.sh
+
+    health_check_url: https://example.com/health
+    webhook_url: ${CUSTOM_WEBHOOK_URL}
+
+# 通知設定（オプション）
+notifications:
+  slack:
+    enabled: true
+    webhook_url: ${SLACK_WEBHOOK_URL}
+    notify_on: [setup_success, setup_failure, alert]
+
+  github:
+    enabled: true
+    create_issue_on_failure: true
+
+# レポート設定（オプション）
+reports:
+  weekly:
+    enabled: false  # 週次レポートを有効にする場合はtrueに
+    day: monday  # レポート送信日
+    slack_channel: ${SLACK_CHANNEL_REPORTS}

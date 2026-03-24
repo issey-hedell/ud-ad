@@ -1,0 +1,99 @@
+name: Monitoring Automation
+
+on:
+  repository_dispatch:
+    types: [deploy-completed]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  setup-monitoring:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check monitoring-config.yml exists
+        id: check-config
+        run: |
+          if [ -f "monitoring-config.yml" ]; then
+            echo "config_exists=true" >> $GITHUB_OUTPUT
+            echo "monitoring-config.yml found"
+          else
+            echo "config_exists=false" >> $GITHUB_OUTPUT
+            echo "monitoring-config.yml not found - skipping monitoring setup"
+          fi
+
+      - name: Install Monitoring Automation dependencies
+        if: steps.check-config.outputs.config_exists == 'true'
+        working-directory: .github/monitoring-automation
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Setup monitoring
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: monitoring
+        working-directory: .github/monitoring-automation
+        env:
+          # GitHub
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_OUTPUT: ${{ github.output }}
+          GITHUB_EVENT_PAYLOAD: ${{ toJson(github.event) }}
+
+          # Sentry
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+          # Datadog
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+          # AWS CloudWatch
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SNS_TOPIC_ARN: ${{ secrets.SNS_TOPIC_ARN }}
+
+          # New Relic
+          NEWRELIC_ACCOUNT_ID: ${{ secrets.NEWRELIC_ACCOUNT_ID }}
+          NEWRELIC_API_KEY: ${{ secrets.NEWRELIC_API_KEY }}
+          NEWRELIC_LICENSE_KEY: ${{ secrets.NEWRELIC_LICENSE_KEY }}
+
+          # Slack
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+          # Other
+          PROJECT_NAME: ${{ github.event.repository.name }}
+        run: |
+          node src/index.js
+
+      - name: Summary
+        if: always() && steps.check-config.outputs.config_exists == 'true'
+        run: |
+          echo "## Monitoring Setup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Provider:** ${{ steps.monitoring.outputs.provider || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.client_payload.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy URL:** ${{ github.event.client_payload.deploy_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "Monitoring setup completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Monitoring setup failed" >> $GITHUB_STEP_SUMMARY
+          fi

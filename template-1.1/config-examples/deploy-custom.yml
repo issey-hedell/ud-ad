@@ -1,0 +1,49 @@
+# Custom Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.custom.example deploy-config.yml
+
+provider: custom
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+
+providers:
+  custom:
+    # 環境別のデプロイコマンドを設定
+    # ${environment}_command の形式で指定
+
+    # 本番環境用コマンド（必須）
+    production_command: |
+      npm run build &&
+      rsync -avz --delete dist/ user@server:/var/www/app/
+
+    # ステージング環境用コマンド（staging環境を使う場合は必須）
+    staging_command: |
+      npm run build &&
+      rsync -avz --delete dist/ user@staging:/var/www/app/
+
+    # Preview環境用コマンド（preview環境を使う場合は必須）
+    # preview_command: |
+    #   npm run build &&
+    #   echo "Preview build completed"
+
+    # オプション設定
+    # url: https://your-domain.com  # デプロイ後のURL
+
+# 注意:
+# - 各環境で使用するコマンドは、その環境名_command で指定
+# - コマンドはシェルで実行されるため、パイプやリダイレクトが使用可能
+# - 環境変数は GitHub Secrets で設定し、コマンド内で参照可能
+#
+# 例: SSH経由でデプロイする場合
+# production_command: |
+#   ssh ${SSH_USER}@${SSH_HOST} "cd /var/www/app && git pull && npm install && npm run build && pm2 restart all"
+#
+# GitHub Secrets に以下を設定（例）:
+# - SSH_USER: SSHユーザー名
+# - SSH_HOST: SSHホスト名

@@ -1,0 +1,22 @@
+{
+  "name": "python-fastapi",
+  "displayName": "Python + FastAPI",
+  "category": "backend",
+  "description": "Python 3.11 + FastAPI + Pydantic",
+  "files": {
+    "include": [
+      "stacks/backend/python-fastapi/structure/**/*",
+      "stacks/backend/python-fastapi/checklists/**/*"
+    ],
+    "exclude": [
+      "docs/checklists/01_prisma.md",
+      "docs/checklists/03_react.md",
+      "docs/checklists/02_typescript.md"
+    ]
+  },
+  "dependencies": {
+    "orm": ["sqlalchemy"],
+    "database": ["postgresql", "mysql"]
+  },
+  "claudeRules": "stacks/backend/python-fastapi/claude-rules.md"
+}

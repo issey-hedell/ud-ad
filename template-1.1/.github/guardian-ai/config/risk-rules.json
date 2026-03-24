@@ -1,0 +1,33 @@
+{
+  "low": [
+    "css-change",
+    "style-change",
+    "prettier-fix",
+    "eslint-fix",
+    "comment-change",
+    "import-sort",
+    "unused-variable",
+    "console-log"
+  ],
+  "medium": [
+    "ui-component-change",
+    "ui-pattern",
+    "useState-added",
+    "useEffect-added",
+    "props-change",
+    "event-handler-change",
+    "type-error",
+    "design-rule"
+  ],
+  "high": [
+    "api-call-change",
+    "database-schema-change",
+    "auth-logic-change",
+    "env-variable-change",
+    "security",
+    "dependency-added",
+    "cors-change",
+    "authentication",
+    "authorization"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "project-template",
+  "version": "2.0.0",
+  "description": "プロジェクトテンプレート - 設計から実装・検証までの標準化",
+  "scripts": {
+    "postinstall": "node scripts/check-member.js",
+    "check-member": "node scripts/check-member.js",
+    "check-member:strict": "node scripts/check-member.js --strict",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

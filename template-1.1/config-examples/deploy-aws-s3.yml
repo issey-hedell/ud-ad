@@ -1,0 +1,39 @@
+# AWS S3 + CloudFront Deploy Configuration
+# 使い方: このファイルを deploy-config.yml にコピーして設定を記入
+# cp deploy-config.aws-s3.example deploy-config.yml
+
+provider: aws-s3
+
+environments:
+  production:
+    branch: main
+    auto_deploy: true
+  staging:
+    branch: develop
+    auto_deploy: true
+  preview:
+    auto_deploy: true
+
+providers:
+  aws-s3:
+    # 必須設定
+    bucket: your-bucket-name
+    region: ap-northeast-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+    # オプション設定
+    # distribution_id: ${CLOUDFRONT_DISTRIBUTION_ID}  # CloudFront使用時
+    # cloudfront_domain: your-domain.cloudfront.net   # カスタムドメイン
+    # build_command: npm run build                    # ビルドコマンド
+    # output_directory: dist                          # ビルド出力ディレクトリ
+
+# GitHub Secrets に以下を設定:
+# - AWS_ACCESS_KEY_ID: AWS アクセスキー ID
+# - AWS_SECRET_ACCESS_KEY: AWS シークレットアクセスキー
+# - CLOUDFRONT_DISTRIBUTION_ID: CloudFront Distribution ID（オプション）
+#
+# 取得方法:
+# 1. AWS Console → IAM → Users → Security credentials
+# 2. Create access key
+# 3. S3バケットとCloudFrontを事前に作成
