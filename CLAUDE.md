@@ -364,7 +364,146 @@ NEXT_PUBLIC_APP_URL=
 
 ---
 
-## 8. 関連ドキュメント
+## 8. 外部サービスの操作ルール
+
+**すべての外部サービスは CLI で自動操作する。GUIダッシュボードは使わない。**
+
+### Supabase
+
+```bash
+# プロジェクト作成
+supabase projects create <project-name> --org-id <org-id> --db-password <password> --region ap-northeast-1
+
+# 環境変数取得
+supabase projects list
+supabase projects api-keys --project-ref <ref>
+
+# マイグレーション
+supabase db push --project-ref <ref>
+supabase migration new <migration-name>
+
+# ローカル開発
+supabase start
+supabase db reset
+```
+
+### Vercel
+
+```bash
+# プロジェクト作成・デプロイ
+vercel --yes
+vercel --prod
+
+# 環境変数設定
+vercel env add NEXT_PUBLIC_SUPABASE_URL production
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
+vercel env add SUPABASE_SERVICE_ROLE_KEY production
+vercel env add STRIPE_SECRET_KEY production
+vercel env add STRIPE_WEBHOOK_SECRET production
+vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
+vercel env add RESEND_API_KEY production
+vercel env add NEXT_PUBLIC_APP_URL production
+
+# プロジェクト確認
+vercel ls
+vercel inspect <deployment-url>
+```
+
+### Stripe
+
+```bash
+# Stripe CLI でWebhookリスニング（開発時）
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+
+# Webhook エンドポイント登録（本番）
+stripe webhook_endpoints create \
+  --url https://<your-domain>/api/stripe/webhook \
+  --enabled-events payment_intent.succeeded,payment_intent.payment_failed
+```
+
+### GitHub Secrets（CI/CD用）
+
+```bash
+# 各シークレットを一括登録
+gh secret set NEXT_PUBLIC_SUPABASE_URL --repo issey-hedell/ud-ad
+gh secret set NEXT_PUBLIC_SUPABASE_ANON_KEY --repo issey-hedell/ud-ad
+gh secret set SUPABASE_SERVICE_ROLE_KEY --repo issey-hedell/ud-ad
+gh secret set STRIPE_SECRET_KEY --repo issey-hedell/ud-ad
+gh secret set STRIPE_WEBHOOK_SECRET --repo issey-hedell/ud-ad
+gh secret set RESEND_API_KEY --repo issey-hedell/ud-ad
+```
+
+---
+
+## 9. テンプレートバージョンアップルール
+
+### 基本方針
+
+**開発を重ねるたびにテンプレートをバージョンアップする。**
+テンプレートはただ使うものではなく、各プロジェクトで改善・進化させて保存する。
+
+### バージョンアップのタイミング
+
+- プロジェクトの主要フェーズ完了時
+- テンプレートに取り込むべき新しいパターン・ルール・スタックが生まれたとき
+- プロジェクト終了時（最終バージョンアップ）
+
+### バージョンアップ手順
+
+```bash
+# 1. 現在使用中のテンプレートバージョンを確認（例: 1.1）
+#    → バージョンアップ先は 1.2
+
+# 2. テンプレートリポジトリをクローン（または既にある場合はpull）
+git clone https://github.com/issey-hedell/template.git ~/Projects/template
+cd ~/Projects/template
+
+# 3. 新バージョンのブランチを作成
+git checkout -b v1.2
+
+# 4. このプロジェクトで改善したルール・スタック・ドキュメントを反映
+#    （template-1.1/ を参考に、改善点を上書き・追記）
+
+# 5. コミット・プッシュ
+git add .
+git commit -m "v1.2: <改善内容の要約>"
+git push -u origin v1.2
+```
+
+### バージョンアップ対象
+
+以下を中心にプロジェクトの知見を反映する：
+
+| 対象 | 内容 |
+|------|------|
+| `CLAUDE.md` | 新しいルール・コーディング規約・外部サービスCLI手順 |
+| `docs/checklists/` | プロジェクトで発見した新チェック項目 |
+| `stacks/` | 新スタック定義（Next.js、Supabase等） |
+| `docs/error-logs/` | 遭遇したエラーと解決策 |
+| `claude-rules/` | スタック固有のルール追加 |
+| `config-examples/` | 新デプロイ設定例 |
+
+### バージョン管理規則
+
+| リポジトリ | URL | 用途 |
+|-----------|-----|------|
+| `template` | `https://github.com/issey-hedell/template` | テンプレート本体 |
+| ブランチ命名 | `v1.2`, `v1.3`, ... | バージョン番号 |
+| 現在の使用バージョン | `v1.1`（`template-1.1/` フォルダ） | このプロジェクト |
+| 次のバージョン | `v1.2` | このプロジェクト完了時に作成 |
+
+### プロジェクト完了時の最終作業
+
+```
+1. template-1.1/ の改善点をまとめる
+2. template リポジトリに v1.2 ブランチを作成
+3. 改善内容を反映・push
+4. NEXT_ACTION.md に「テンプレート v1.2 作成完了」を記録
+```
+
+---
+
+## 10. 関連ドキュメント
 
 | ファイル | 内容 |
 |---------|------|
